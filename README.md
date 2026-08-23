@@ -23,7 +23,7 @@ In the previous version, the data fetched from the REST API was passed down to t
 
 The following architecture diagram illustrates the structural shift and reactive data flow in `Phogal_With_Room`, highlighting the Room Database acting as the central Single Source of Truth (SSOT).
 
-![Phogal Room Architecture](./with_room.png)
+![Phogal Room Architecture](with_Room.png)
 
 ### Comparison: Legacy vs. New SSOT Flow
 flowchart TD
