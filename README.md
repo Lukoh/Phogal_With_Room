@@ -26,7 +26,6 @@ The following architecture diagram illustrates the structural shift and reactive
 ![Phogal Room Architecture](./phogal_room_architecture.png)
 
 ### Comparison: Legacy vs. New SSOT Flow
-```mermaid
 flowchart TD
     subgraph "Legacy (Phogal_Migrate)"
         direction LR
