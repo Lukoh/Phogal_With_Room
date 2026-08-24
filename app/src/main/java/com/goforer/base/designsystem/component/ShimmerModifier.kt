@@ -1,11 +1,6 @@
 package com.goforer.base.designsystem.component
 
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -18,65 +13,33 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.IntSize
 
+/**
+ * SNS-style (Instagram-like) premium Shimmer effect.
+ *
+ * Features:
+ * - Smooth diagonal sweep (45 degrees).
+ * - Linear constant motion.
+ * - Soft neutral colors that work in both Light and Dark themes.
+ *
+ * @param baseColor The background color of the skeleton element.
+ * @param highlightColor The moving "sheen" color.
+ * @param durationMillis Speed of the sweep animation.
+ */
 @Composable
 fun Modifier.shimmer(
-    baseColor: Color = MaterialTheme.colorScheme.surfaceVariant,
-    highlightColor: Color = MaterialTheme.colorScheme.surface,
-    durationMillis: Int = 1_200,
-): Modifier = composed {
-    val transition = rememberInfiniteTransition(label = "shimmer")
-    val progress by transition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = durationMillis),
-            repeatMode = RepeatMode.Reverse,
-        ),
-        label = "shimmer-progress",
-    )
-
-    // Compose the base fill first, then overlay the moving gradient using a
-    // drawWithContent pattern. A linear gradient whose start/end points travel
-    // across the bounds produces the sheen.
-    this
-        .background(baseColor)
-        .graphicsLayer { }                // establishes a draw layer so the
-                                          // brush below composites cleanly
-        .background(
-            brush = Brush.linearGradient(
-                colors = listOf(
-                    baseColor,
-                    highlightColor,
-                    baseColor,
-                ),
-                // The gradient's end-point slides with `progress`, sweeping the
-                // highlight across the element. Using a pair of float coords
-                // (x, y) of equal magnitude keeps the sweep diagonal.
-                start = Offset(
-                    x = progress * 1_000f - 500f,
-                    y = progress * 1_000f - 500f,
-                ),
-                end = Offset(
-                    x = progress * 1_000f - 500f + 400f,
-                    y = progress * 1_000f - 500f + 400f,
-                ),
-            )
-        )
-}
-
-fun Modifier.shimmer(
-    durationMillis: Int = 1200,
-    shimmerColor: Color = Color.White.copy(alpha = 0.3f) // 하이라이트 줄 컬러
+    baseColor: Color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+    highlightColor: Color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f),
+    durationMillis: Int = 1300,
 ): Modifier = composed {
     var size by remember { mutableStateOf(IntSize.Zero) }
-    val transition = rememberInfiniteTransition(label = "shimmer_transition")
+    val transition = rememberInfiniteTransition(label = "shimmer_premium")
+
     val translateAnim by transition.animateFloat(
-        initialValue = -2f * size.width.toFloat(),
-        targetValue = 2f * size.width.toFloat(),
+        initialValue = -2f * (size.width.toFloat() + size.height.toFloat()),
+        targetValue = 2f * (size.width.toFloat() + size.height.toFloat()),
         animationSpec = infiniteRepeatable(
             animation = tween(durationMillis, easing = LinearEasing),
             repeatMode = RepeatMode.Restart
@@ -87,15 +50,19 @@ fun Modifier.shimmer(
     val brush = if (size.width > 0 && size.height > 0) {
         Brush.linearGradient(
             colors = listOf(
-                Color.Transparent,
-                shimmerColor,
-                Color.Transparent,
+                baseColor,
+                highlightColor,
+                baseColor,
             ),
-            start = Offset(translateAnim, 0f),
-            end = Offset(translateAnim + size.width.toFloat(), size.height.toFloat())
+            start = Offset(translateAnim, translateAnim),
+            end = Offset(
+                translateAnim + size.width.toFloat(),
+                translateAnim + size.height.toFloat()
+            )
         )
     } else {
-        Brush.linearGradient(listOf(Color.Transparent, Color.Transparent))
+        // Fallback for initial state
+        Brush.linearGradient(listOf(baseColor, baseColor))
     }
 
     this
@@ -104,16 +71,21 @@ fun Modifier.shimmer(
 }
 
 /**
- * A convenience overload that hard-codes `MaterialTheme.colorScheme.surface`
- * as the highlight colour — this matches what every previous call site passed.
- *
- * Keep [shimmer] if you need a custom highlight; prefer this when the defaults
- * are fine (which is almost always).
+ * Standard shimmer with predefined premium SNS colors.
  */
 @Composable
-@Suppress("unused")
-fun Modifier.shimmerWithDefaults(): Modifier =
-    shimmer(
-        baseColor = MaterialTheme.colorScheme.surfaceVariant,
-        highlightColor = MaterialTheme.colorScheme.surface,
-    )
+fun Modifier.snsShimmer(): Modifier = shimmer(
+    baseColor = Color(0xFFEBEBEB),
+    highlightColor = Color(0xFFF5F5F5),
+    durationMillis = 1200
+)
+
+/**
+ * Dark-theme optimized SNS shimmer.
+ */
+@Composable
+fun Modifier.snsShimmerDark(): Modifier = shimmer(
+    baseColor = Color(0xFF242424),
+    highlightColor = Color(0xFF323232),
+    durationMillis = 1200
+)

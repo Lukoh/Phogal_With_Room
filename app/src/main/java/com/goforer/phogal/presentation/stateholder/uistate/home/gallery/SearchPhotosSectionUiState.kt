@@ -17,6 +17,7 @@ class SearchPhotosSectionUiState internal constructor(
 ) {
     val loadingDone: Boolean get() = _loadingDone.value
     fun setLoadingDone() { _loadingDone.value = true }
+    fun setLoadingStarted() { _loadingDone.value = false }
 }
 
 @Composable

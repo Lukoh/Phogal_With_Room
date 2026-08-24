@@ -23,12 +23,14 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
@@ -60,7 +62,11 @@ fun FollowingUsersSection(
     onFollow: (userUiState: User) -> Unit
 ) {
     val lazyListState = users.rememberLazyListState()
-    val isRefreshing = users.loadState.refresh is LoadState.Loading
+    val isRefreshing by remember(users.loadState.refresh, users.itemCount) {
+        derivedStateOf {
+            users.loadState.refresh is LoadState.Loading && users.itemCount > 0
+        }
+    }
 
     // derivedStateOf: only triggers recomposition when the boolean actually flips,
     // not on every scroll tick.
@@ -101,6 +107,7 @@ fun FollowingUsersSection(
             ) {
                 renderLoadState(
                     users = users,
+                    sectionUiState = sectionUiState,
                     onViewPhotos = onViewPhotos,
                     onOpenWebView = onOpenWebView,
                     onFollow = onFollow
@@ -128,6 +135,27 @@ fun FollowingUsersSection(
 
         sectionUiState.setClicked(false)
     }
+
+    LaunchedEffect(users) {
+        sectionUiState.setLoadingStarted()
+    }
+
+    var hasStartedLoading by remember(users) { mutableStateOf(false) }
+
+    LaunchedEffect(users.loadState.refresh) {
+        when (users.loadState.refresh) {
+            is LoadState.Loading -> {
+                hasStartedLoading = true
+                sectionUiState.setLoadingStarted()
+            }
+            is LoadState.NotLoading -> {
+                if (users.itemCount > 0 || (hasStartedLoading && users.loadState.append.endOfPaginationReached)) {
+                    sectionUiState.setLoadingDone()
+                }
+            }
+            else -> Unit
+        }
+    }
 }
 
 /**
@@ -138,53 +166,59 @@ fun FollowingUsersSection(
 @OptIn(ExperimentalFoundationApi::class)
 private fun LazyListScope.renderLoadState(
     users: LazyPagingItems<User>,
+    sectionUiState: FollowingUserSectionUiState,
     onViewPhotos: (name: String, firstName: String, lastName: String, username: String) -> Unit,
     onOpenWebView: (firstName: String, url: String?) -> Unit,
     onFollow: (userUiState: User) -> Unit
 ) {
     val loadState = users.loadState
 
-    when(loadState.refresh) {
-        is LoadState.Loading -> {
-            item {}
-        }
-
-        is LoadState.NotLoading -> {
-            if (users.itemCount == 0) {
-                item { EmptyState() }
-            } else {
-                items(
-                    count = users.itemCount,
-                    key = { index ->
-                        val user = users.peek(index)
-                        "${user?.id ?: index}_$index"
-                    },
-                    contentType = users.itemContentType()
-                ) { index ->
-                    FollowingUsersItem(
-                        modifier = Modifier.animateItem(
-                            tween(durationMillis = 250)
-                        ),
-                        followingUserItemUiState = rememberFollowingUserItemUiState(
-                            index = rememberSaveable { mutableIntStateOf(index) },
-                            user = rememberSaveable { mutableStateOf(users[index]!!.toString()) },
-                            visibleViewButton = rememberSaveable { mutableStateOf(true) },
-                            followed = rememberSaveable { mutableStateOf(true) }
-                        ),
-                        onViewPhotos = onViewPhotos,
-                        onOpenWebView = onOpenWebView,
-                        onFollow = onFollow
+    if (users.itemCount == 0) {
+        when (loadState.refresh) {
+            is LoadState.Loading -> {
+                items(5) {
+                    LoadingUser(
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                            .fillMaxWidth()
                     )
-
-                    if (index == users.itemCount - 1)
-                        Spacer(modifier = Modifier.height(26.dp))
                 }
             }
-        }
 
-        is LoadState.Error -> {
+            is LoadState.NotLoading -> {
+                if (sectionUiState.loadingDone) {
+                    item {
+                        EmptyState(
+                            text = stringResource(id = R.string.setting_no_following)
+                        )
+                    }
+                } else {
+                    items(5) {
+                        LoadingUser(
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp, vertical = 8.dp)
+                                .fillMaxWidth()
+                        )
+                    }
+                }
+            }
+
+            is LoadState.Error -> {
+                val error = (loadState.refresh as LoadState.Error).error
+                item { ErrorRow(throwable = error, onRetry = { users.retry() }) }
+            }
+        }
+    } else {
+        if (loadState.refresh is LoadState.Error) {
             val error = (loadState.refresh as LoadState.Error).error
             item { ErrorRow(throwable = error, onRetry = { users.retry() }) }
+        } else {
+            userItems(
+                users = users,
+                onViewPhotos = onViewPhotos,
+                onOpenWebView = onOpenWebView,
+                onFollow = onFollow
+            )
         }
     }
 
@@ -193,11 +227,48 @@ private fun LazyListScope.renderLoadState(
         is LoadState.Loading -> {
             Timber.d("Pagination Loading")
         }
+
         is LoadState.Error -> {
             Timber.d("Pagination broken Error")
             val error = (loadState.append as LoadState.Error).error
             item { ErrorRow(throwable = error, onRetry = { users.retry() }) }
         }
+
         else -> Unit
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+private fun LazyListScope.userItems(
+    users: LazyPagingItems<User>,
+    onViewPhotos: (name: String, firstName: String, lastName: String, username: String) -> Unit,
+    onOpenWebView: (firstName: String, url: String?) -> Unit,
+    onFollow: (userUiState: User) -> Unit
+) {
+    items(
+        count = users.itemCount,
+        key = { index ->
+            val user = users.peek(index)
+            "${user?.id ?: index}_$index"
+        },
+        contentType = users.itemContentType()
+    ) { index ->
+        FollowingUsersItem(
+            modifier = Modifier.animateItem(
+                tween(durationMillis = 250)
+            ),
+            followingUserItemUiState = rememberFollowingUserItemUiState(
+                index = rememberSaveable { mutableIntStateOf(index) },
+                user = rememberSaveable { mutableStateOf(users[index]!!.toString()) },
+                visibleViewButton = rememberSaveable { mutableStateOf(true) },
+                followed = rememberSaveable { mutableStateOf(true) }
+            ),
+            onViewPhotos = onViewPhotos,
+            onOpenWebView = onOpenWebView,
+            onFollow = onFollow
+        )
+
+        if (index == users.itemCount - 1)
+            Spacer(modifier = Modifier.height(26.dp))
     }
 }

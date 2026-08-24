@@ -22,6 +22,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,6 +43,7 @@ import com.goforer.phogal.presentation.stateholder.uistate.home.setting.bookmark
 import com.goforer.phogal.presentation.stateholder.uistate.home.common.photo.rememberPictureItemUiState
 import com.goforer.phogal.presentation.ui.compose.screen.home.common.EmptyState
 import com.goforer.phogal.presentation.ui.compose.screen.home.common.ErrorRow
+import com.goforer.phogal.presentation.ui.compose.screen.home.common.photo.LoadingPicture
 import com.goforer.phogal.presentation.ui.compose.screen.home.common.photo.ShowUpButton
 import com.goforer.phogal.presentation.ui.theme.Blue15
 import com.goforer.phogal.presentation.ui.theme.Blue95
@@ -61,7 +63,11 @@ fun BookmarkedPhotosSection(
     onOpenWebView: (firstName: String, url: String) -> Unit
 ) {
     val lazyListState = photos.rememberLazyListState()
-    val isRefreshing = photos.loadState.refresh is LoadState.Loading
+    val isRefreshing by remember(photos.loadState.refresh, photos.itemCount) {
+        derivedStateOf {
+            photos.loadState.refresh is LoadState.Loading && photos.itemCount > 0
+        }
+    }
 
     // derivedStateOf: only triggers recomposition when the boolean actually flips,
     // not on every scroll tick.
@@ -105,6 +111,7 @@ fun BookmarkedPhotosSection(
             ) {
                 renderLoadState(
                     photos = photos,
+                    sectionUiState = sectionUiState,
                     onItemClicked = onItemClicked,
                     onViewPhotos = onViewPhotos,
                     onOpenWebView = onOpenWebView,
@@ -131,6 +138,27 @@ fun BookmarkedPhotosSection(
 
             sectionUiState.setScrollConsumed()
         }
+
+        LaunchedEffect(photos) {
+            sectionUiState.setLoadingStarted()
+        }
+
+        var hasStartedLoading by remember(photos) { mutableStateOf(false) }
+
+        LaunchedEffect(photos.loadState.refresh) {
+            when (photos.loadState.refresh) {
+                is LoadState.Loading -> {
+                    hasStartedLoading = true
+                    sectionUiState.setLoadingStarted()
+                }
+                is LoadState.NotLoading -> {
+                    if (photos.itemCount > 0 || (hasStartedLoading && photos.loadState.append.endOfPaginationReached)) {
+                        sectionUiState.setLoadingDone()
+                    }
+                }
+                else -> Unit
+            }
+        }
     }
 }
 
@@ -142,47 +170,57 @@ fun BookmarkedPhotosSection(
 @OptIn(ExperimentalFoundationApi::class)
 private fun LazyListScope.renderLoadState(
     photos: LazyPagingItems<Picture>,
+    sectionUiState: BookmarkSectionUiState,
     onItemClicked: (item: Picture, index: Int) -> Unit,
     onViewPhotos: (name: String, firstName: String, lastName: String, username: String) -> Unit,
     onOpenWebView: (firstName: String, url: String) -> Unit
 ) {
     val loadState = photos.loadState
 
-    when(loadState.refresh) {
-        is LoadState.Loading -> {
-            item {}
-        }
-        is LoadState.NotLoading -> {
-            if (photos.itemCount == 0 ) {
-                item { EmptyState() }
-            } else {
-                items(count = photos.itemCount,
-                    key = { index ->
-                        val photo = photos.peek(index)
-                        "${photo?.id ?: index}_$index"
-                    },
-                    contentType = photos.itemContentType()
-                ) { index ->
-                    PictureItem(
-                        modifier = Modifier.animateItem(
-                            tween(durationMillis = 250)
-                        ),
-                        pictureItemUiState = rememberPictureItemUiState(
-                            picture = rememberSaveable { mutableStateOf(photos[index]!!)}
-                        ),
-                        onItemClicked = onItemClicked,
-                        onViewPhotos = onViewPhotos,
-                        onShowSnackBar = {},
-                        onOpenWebView = onOpenWebView
+    if (photos.itemCount == 0) {
+        when (loadState.refresh) {
+            is LoadState.Loading -> {
+                items(5) { index ->
+                    LoadingPicture(
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                            .fillMaxWidth(),
+                        enableLoadIndicator = index == 0
                     )
-                    if (photos.itemCount < PAGE_SIZE_HINT && index == photos.itemCount - 1)
-                        Spacer(modifier = Modifier.height(26.dp))
                 }
             }
+
+            is LoadState.NotLoading -> {
+                if (sectionUiState.loadingDone) {
+                    item { EmptyState() }
+                } else {
+                    items(5) { index ->
+                        LoadingPicture(
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp, vertical = 8.dp)
+                                .fillMaxWidth(),
+                            enableLoadIndicator = index == 0
+                        )
+                    }
+                }
+            }
+
+            is LoadState.Error -> {
+                val error = (loadState.refresh as LoadState.Error).error
+                item { ErrorRow(throwable = error, onRetry = { photos.retry() }) }
+            }
         }
-        is LoadState.Error -> {
+    } else {
+        if (loadState.refresh is LoadState.Error) {
             val error = (loadState.refresh as LoadState.Error).error
             item { ErrorRow(throwable = error, onRetry = { photos.retry() }) }
+        } else {
+            pictureItems(
+                photos = photos,
+                onItemClicked = onItemClicked,
+                onViewPhotos = onViewPhotos,
+                onOpenWebView = onOpenWebView
+            )
         }
     }
 
@@ -191,11 +229,44 @@ private fun LazyListScope.renderLoadState(
         is LoadState.Loading -> {
             Timber.d("Pagination Loading")
         }
+
         is LoadState.Error -> {
             Timber.d("Pagination broken Error")
             val error = (loadState.append as LoadState.Error).error
             item { ErrorRow(throwable = error, onRetry = { photos.retry() }) }
         }
+
         else -> Unit
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+private fun LazyListScope.pictureItems(
+    photos: LazyPagingItems<Picture>,
+    onItemClicked: (item: Picture, index: Int) -> Unit,
+    onViewPhotos: (name: String, firstName: String, lastName: String, username: String) -> Unit,
+    onOpenWebView: (firstName: String, url: String) -> Unit
+) {
+    items(count = photos.itemCount,
+        key = { index ->
+            val photo = photos.peek(index)
+            "${photo?.id ?: index}_$index"
+        },
+        contentType = photos.itemContentType()
+    ) { index ->
+        PictureItem(
+            modifier = Modifier.animateItem(
+                tween(durationMillis = 250)
+            ),
+            pictureItemUiState = rememberPictureItemUiState(
+                picture = rememberSaveable { mutableStateOf(photos[index]!!) }
+            ),
+            onItemClicked = onItemClicked,
+            onViewPhotos = onViewPhotos,
+            onShowSnackBar = {},
+            onOpenWebView = onOpenWebView
+        )
+        if (photos.itemCount < PAGE_SIZE_HINT && index == photos.itemCount - 1)
+            Spacer(modifier = Modifier.height(26.dp))
     }
 }

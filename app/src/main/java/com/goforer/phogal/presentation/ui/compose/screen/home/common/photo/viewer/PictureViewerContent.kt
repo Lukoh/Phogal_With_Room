@@ -426,25 +426,30 @@ fun BodyContent(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .clip(RoundedCornerShape(16.dp))
                 .animateContentSize()
         ) {
-            val imageUrl = picture.urls.raw
+            val imageUrl = picture.urls.regular
             val painter = loadImagePainter(
                 data = imageUrl,
-                size = Size(picture.width.div(8), picture.height.div(8))
+                size = Size.ORIGINAL
             )
             val bringIntoViewRequester = remember { BringIntoViewRequester() }
 
             if (painter.state is AsyncImagePainter.State.Loading) {
+                val isDark = androidx.compose.foundation.isSystemInDarkTheme()
+                val baseColor = if (isDark) Color(0xFF242424) else Color(0xFFEBEBEB)
+                val highlightColor = if (isDark) Color(0xFF323232) else Color(0xFFF5F5F5)
+
                 val screenHeight = LocalWindowInfo.current.containerSize
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(screenHeight.height.dp / 2)
-                        .background(ColorSystemGray7)
                         .shimmer(
-                            baseColor = ColorSystemGray7,
-                            highlightColor = MaterialTheme.colorScheme.surface,
+                            baseColor = baseColor,
+                            highlightColor = highlightColor,
+                            durationMillis = 1200
                         )
                 )
             } else {

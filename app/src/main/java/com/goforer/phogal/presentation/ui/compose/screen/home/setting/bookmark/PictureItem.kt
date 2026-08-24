@@ -4,7 +4,6 @@ import android.content.res.Configuration
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.graphicsLayer
@@ -73,11 +73,11 @@ fun PictureItem(
         modifier = modifier
             .fillMaxWidth()
             .padding(start = 16.dp, end = 16.dp, top = topPadding, bottom = bottomPadding)
-            .clip(RoundedCornerShape(16.dp))
             .clickable {
                 pictureItemUiState.setClicked(true)
                 onItemClicked(picture, pictureItemUiState.index)
             },
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.elevatedCardColors(
             containerColor = if (pictureItemUiState.clicked)
                 MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
@@ -89,7 +89,11 @@ fun PictureItem(
             pressedElevation = 0.dp
         )
     ) {
-        Column(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(16.dp))
+        ) {
             val imageUrl = picture.urls.raw
             val painter = loadImagePainter(
                 data = imageUrl,
@@ -111,13 +115,17 @@ fun PictureItem(
                     )
             ) {
                 if (painter.state is AsyncImagePainter.State.Loading) {
+                    val isDark = androidx.compose.foundation.isSystemInDarkTheme()
+                    val baseColor = if (isDark) Color(0xFF242424) else Color(0xFFEBEBEB)
+                    val highlightColor = if (isDark) Color(0xFF323232) else Color(0xFFF5F5F5)
+
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f))
                             .shimmer(
-                                durationMillis = 1300,
-                                shimmerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.4f)
+                                baseColor = baseColor,
+                                highlightColor = highlightColor,
+                                durationMillis = 1200
                             )
                     )
                 } else {

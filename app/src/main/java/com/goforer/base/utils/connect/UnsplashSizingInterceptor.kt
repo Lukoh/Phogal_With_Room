@@ -2,6 +2,7 @@ package com.goforer.base.utils.connect
 
 import coil.intercept.Interceptor
 import coil.request.ImageResult
+import coil.size.Dimension
 import okhttp3.HttpUrl.Companion.toHttpUrl
 
 object UnsplashSizingInterceptor : Interceptor {
@@ -11,13 +12,20 @@ object UnsplashSizingInterceptor : Interceptor {
         if (data is String &&
             data.startsWith("https://images.unsplash.com/photo-")
         ) {
-            val url = data.toHttpUrl()
-                .newBuilder()
-                .addQueryParameter("w", size.width.toString())
-                .addQueryParameter("h", size.height.toString())
-                .build()
-            val request = chain.request.newBuilder().data(url).build()
-            return chain.proceed(request)
+            val width = size.width
+            val height = size.height
+            
+            // Only add sizing parameters if we have valid pixel dimensions.
+            // Avoid adding them if using Size.ORIGINAL (Dimension.Undefined).
+            if (width is Dimension.Pixels && height is Dimension.Pixels) {
+                val url = data.toHttpUrl()
+                    .newBuilder()
+                    .setQueryParameter("w", width.px.toString())
+                    .setQueryParameter("h", height.px.toString())
+                    .build()
+                val request = chain.request.newBuilder().data(url.toString()).build()
+                return chain.proceed(request)
+            }
         }
         return chain.proceed(chain.request)
     }

@@ -116,21 +116,21 @@ android {
         prod {
             dimension "default"
             manifestPlaceholders = [appNameGradle: "Phogal", appLabel: "@string/app_name"]
-            buildConfigField "String", "apiServer", "\" https://api.unsplash.com/\""
-            buildConfigField "String", "clientId", "\"V9sYHDmwcPc46chEOLA_bhTV3hwsWG0P1ta1vNZjmLscR6sNPs\""
+            buildConfigField "String", "apiServer", "\"https://api.unsplash.com/\""
+            buildConfigField "String", "clientId", "\"V9sYHDmwcPc46chEOLA_bhTV3hwsWG0P1ta1vNZjmLs\""
         }
         stg {
             dimension "default"
             applicationIdSuffix = ".stg"
             manifestPlaceholders = [appNameGradle: "Phogal_stg", appLabel: "Phogal_Stg"]
-            buildConfigField "String", "apiServer", "\" https://api.unsplash.com/\""
+            buildConfigField "String", "apiServer", "\"https://api.unsplash.com/\""
             buildConfigField "String", "clientId", "\"V9sYHDmwcPc46chEOLA_bhTV3hwsWG0P1ta1vNZjmLs\""
         }
         dev {
             dimension "default"
             applicationIdSuffix = ".dev"
             manifestPlaceholders = [appNameGradle: "Phogal_Dev", appLabel: "Phogal_Dev"]
-            buildConfigField "String", "apiServer", "\" https://api.unsplash.com/\""
+            buildConfigField "String", "apiServer", "\"https://api.unsplash.com/\""
             buildConfigField "String", "clientId", "\"V9sYHDmwcPc46chEOLA_bhTV3hwsWG0P1ta1vNZjmLs\""
         }
     }

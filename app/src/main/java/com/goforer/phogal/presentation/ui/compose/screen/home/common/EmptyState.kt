@@ -17,11 +17,14 @@ import com.goforer.phogal.R
 import com.goforer.phogal.presentation.ui.theme.ColorSystemGray7
 
 @Composable
-fun EmptyState(modifier: Modifier = Modifier) {
+fun EmptyState(
+    modifier: Modifier = Modifier,
+    text: String = stringResource(id = R.string.no_picture)
+) {
     Box(modifier = modifier.fillMaxWidth()) {
         Spacer(modifier = Modifier.height(320.dp))
         Text(
-            text = stringResource(id = R.string.no_picture),
+            text = text,
             style = MaterialTheme.typography.titleMedium.copy(color = ColorSystemGray7),
             modifier = Modifier.align(Alignment.Center),
             fontFamily = FontFamily.SansSerif,

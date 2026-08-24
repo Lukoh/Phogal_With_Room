@@ -76,12 +76,12 @@ fun FollowingUsersItem(
         modifier = modifier
             .fillMaxWidth()
             .padding(start = 16.dp, end = 16.dp, top = topPadding, bottom = bottomPadding)
-            .clip(RoundedCornerShape(16.dp))
             .clickable {
                 user.username?.let {
                     onViewPhotos(it, user.firstName, user.lastName ?: "", it)
                 }
             },
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.elevatedCardColors(
             containerColor = if (followingUserItemUiState.clicked)
                 MaterialTheme.colorScheme.surfaceVariant
@@ -96,6 +96,7 @@ fun FollowingUsersItem(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .clip(RoundedCornerShape(16.dp))
                 .padding(16.dp),
             horizontalAlignment = Alignment.Start,
         ) {

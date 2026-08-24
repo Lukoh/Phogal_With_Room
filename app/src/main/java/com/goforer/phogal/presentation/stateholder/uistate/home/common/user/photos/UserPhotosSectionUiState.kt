@@ -24,6 +24,7 @@ class UserPhotosSectionUiState internal constructor(
     fun setScrollConsumed() { _clicked.value = false }
     fun setUpButtonVisibilityChanged(visible: Boolean) { _visibleUpButton.value = visible }
     fun setLoadingDone() { _loadingDone.value = true }
+    fun setLoadingStarted() { _loadingDone.value = false }
 }
 
 @Composable
