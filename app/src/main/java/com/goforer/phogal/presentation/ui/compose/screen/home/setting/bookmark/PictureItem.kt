@@ -45,7 +45,6 @@ import com.goforer.phogal.presentation.stateholder.uistate.home.common.user.reme
 import com.goforer.phogal.presentation.ui.compose.screen.home.common.user.UserContainer
 import com.goforer.phogal.presentation.ui.theme.Blue75
 import com.goforer.phogal.presentation.ui.theme.ColorSnowWhite
-import com.goforer.base.designsystem.component.snsShimmer
 import com.goforer.phogal.data.model.remote.response.gallery.common.Links
 import com.goforer.phogal.data.model.remote.response.gallery.common.ProfileImage
 import com.goforer.phogal.data.model.remote.response.gallery.common.Social

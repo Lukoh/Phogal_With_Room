@@ -18,13 +18,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
-import com.goforer.base.customtab.openCustomTab
-import com.goforer.phogal.presentation.ui.compose.screen.home.common.InitScreen
 import com.goforer.phogal.R
 import com.goforer.phogal.data.model.remote.response.gallery.common.photo.Photo
 import com.goforer.phogal.data.model.remote.response.gallery.common.user.User
 import com.goforer.phogal.presentation.stateholder.uistate.home.common.user.photos.UserPhotosContentUiState
-import com.goforer.phogal.presentation.stateholder.uistate.home.common.user.photos.rememberUserPhotosContentUiState
 import com.goforer.phogal.presentation.stateholder.uistate.home.common.user.photos.rememberUserPhotosSectionUiState
 import com.goforer.phogal.presentation.ui.compose.screen.home.common.InitScreen
 import com.goforer.phogal.presentation.ui.compose.screen.home.gallery.SearchSection
@@ -71,7 +68,6 @@ fun UserPhotosContent(
 fun UserPhotosContentPreview(modifier: Modifier = Modifier) {
     PhogalTheme {
         BoxWithConstraints(modifier = modifier) {
-            // maxWidth를 변수에 할당하여 사용 (에러 해결 핵심)
             val isWideScreen = maxWidth > 600.dp
             val dynamicPadding = if (isWideScreen) 32.dp else 2.dp
             val dynamicFontSize = if (isWideScreen) {
@@ -95,7 +91,7 @@ fun UserPhotosContentPreview(modifier: Modifier = Modifier) {
                 ) {
                     Text(
                         text = stringResource(id = R.string.search_photos),
-                        style = dynamicFontSize.copy( // 크기에 따른 동적 스타일 적용
+                        style = dynamicFontSize.copy(
                             color = ColorSystemGray7,
                             fontFamily = FontFamily.SansSerif,
                             fontWeight = FontWeight.Bold

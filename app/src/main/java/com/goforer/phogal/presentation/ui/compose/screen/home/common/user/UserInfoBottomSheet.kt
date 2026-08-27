@@ -24,7 +24,6 @@ import com.goforer.phogal.data.model.remote.response.gallery.common.user.User
 import com.goforer.phogal.presentation.stateholder.uistate.home.common.user.UserInfoUiState
 import com.goforer.phogal.presentation.stateholder.uistate.home.common.user.rememberUserInfoUiState
 import com.goforer.phogal.presentation.ui.theme.DarkGreenGray10
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
