@@ -61,7 +61,7 @@ import com.goforer.base.designsystem.component.IconButton
 import com.goforer.base.designsystem.component.IconContainer
 import com.goforer.base.designsystem.component.ImageCrossFade
 import com.goforer.base.designsystem.component.loadImagePainter
-import com.goforer.base.designsystem.component.shimmer
+import com.goforer.base.designsystem.component.snsShimmer
 import com.goforer.base.extension.toUser
 import com.goforer.phogal.R
 import com.goforer.phogal.data.model.remote.response.gallery.common.user.User
@@ -281,18 +281,11 @@ fun ShowProfileImage(
             )
 
             if (painter.state is AsyncImagePainter.State.Loading) {
-                val isDark = androidx.compose.foundation.isSystemInDarkTheme()
-                val baseColor = if (isDark) Color(0xFF242424) else Color(0xFFEBEBEB)
-                val highlightColor = if (isDark) Color(0xFF323232) else Color(0xFFF5F5F5)
-
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .clip(CircleShape)
-                        .shimmer(
-                            baseColor = baseColor,
-                            highlightColor = highlightColor
-                        )
+                        .snsShimmer()
                 )
             }
         }

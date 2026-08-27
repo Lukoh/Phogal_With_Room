@@ -27,7 +27,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.graphicsLayer
@@ -44,7 +43,7 @@ import com.goforer.phogal.presentation.stateholder.uistate.home.common.user.reme
 import com.goforer.phogal.presentation.ui.compose.screen.home.common.user.UserContainer
 import com.goforer.phogal.presentation.ui.theme.Blue75
 import com.goforer.phogal.presentation.ui.theme.ColorSnowWhite
-import com.goforer.base.designsystem.component.shimmer
+import com.goforer.base.designsystem.component.snsShimmer
 import com.goforer.phogal.data.model.remote.response.gallery.common.Links
 import com.goforer.phogal.data.model.remote.response.gallery.common.ProfileImage
 import com.goforer.phogal.data.model.remote.response.gallery.common.Social
@@ -115,18 +114,10 @@ fun PictureItem(
                     )
             ) {
                 if (painter.state is AsyncImagePainter.State.Loading) {
-                    val isDark = androidx.compose.foundation.isSystemInDarkTheme()
-                    val baseColor = if (isDark) Color(0xFF242424) else Color(0xFFEBEBEB)
-                    val highlightColor = if (isDark) Color(0xFF323232) else Color(0xFFF5F5F5)
-
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .shimmer(
-                                baseColor = baseColor,
-                                highlightColor = highlightColor,
-                                durationMillis = 1200
-                            )
+                            .snsShimmer()
                     )
                 } else {
                     val imageModifier = Modifier

@@ -1,7 +1,6 @@
 package com.goforer.phogal.presentation.ui.compose.screen.home.common.photo
 
 import android.content.res.Configuration
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -12,11 +11,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.goforer.base.designsystem.component.LoadingIndicator
-import com.goforer.base.designsystem.component.shimmer
+import com.goforer.base.designsystem.component.snsShimmer
 import com.goforer.phogal.presentation.ui.theme.DarkGreen10
 import com.goforer.phogal.presentation.ui.theme.PhogalTheme
 
@@ -25,10 +23,6 @@ fun LoadingPicture(
     modifier: Modifier = Modifier,
     enableLoadIndicator: Boolean = false
 ) {
-    val isDark = isSystemInDarkTheme()
-    val baseColor = if (isDark) Color(0xFF242424) else Color(0xFFEBEBEB)
-    val highlightColor = if (isDark) Color(0xFF323232) else Color(0xFFF5F5F5)
-
     ElevatedCard(
         modifier = modifier
             .fillMaxWidth()
@@ -49,11 +43,7 @@ fun LoadingPicture(
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(4f / 3f)
-                    .shimmer(
-                        baseColor = baseColor,
-                        highlightColor = highlightColor,
-                        durationMillis = 1200
-                    )
+                    .snsShimmer()
             ) {
                 if (enableLoadIndicator) {
                     LoadingIndicator(
@@ -78,10 +68,7 @@ fun LoadingPicture(
                         modifier = Modifier
                             .size(36.dp)
                             .clip(CircleShape)
-                            .shimmer(
-                                baseColor = baseColor,
-                                highlightColor = highlightColor
-                            )
+                            .snsShimmer()
                     )
 
                     Spacer(modifier = Modifier.width(14.dp))
@@ -96,10 +83,7 @@ fun LoadingPicture(
                                 .width(100.dp)
                                 .height(14.dp)
                                 .clip(RoundedCornerShape(4.dp))
-                                .shimmer(
-                                    baseColor = baseColor,
-                                    highlightColor = highlightColor
-                                )
+                                .snsShimmer()
                         )
                         // Stats Line
                         Box(
@@ -107,10 +91,7 @@ fun LoadingPicture(
                                 .width(150.dp)
                                 .height(10.dp)
                                 .clip(RoundedCornerShape(4.dp))
-                                .shimmer(
-                                    baseColor = baseColor,
-                                    highlightColor = highlightColor
-                                )
+                                .snsShimmer()
                         )
                         // Updated At Line
                         Box(
@@ -118,10 +99,7 @@ fun LoadingPicture(
                                 .width(100.dp)
                                 .height(10.dp)
                                 .clip(RoundedCornerShape(4.dp))
-                                .shimmer(
-                                    baseColor = baseColor,
-                                    highlightColor = highlightColor
-                                )
+                                .snsShimmer()
                         )
                     }
 
@@ -133,10 +111,7 @@ fun LoadingPicture(
                             .width(60.dp)
                             .height(32.dp)
                             .clip(RoundedCornerShape(8.dp))
-                            .shimmer(
-                                baseColor = baseColor,
-                                highlightColor = highlightColor
-                            )
+                            .snsShimmer()
                     )
                 }
 
@@ -147,10 +122,7 @@ fun LoadingPicture(
                         .width(140.dp)
                         .height(12.dp)
                         .clip(RoundedCornerShape(4.dp))
-                        .shimmer(
-                            baseColor = baseColor,
-                            highlightColor = highlightColor
-                        )
+                        .snsShimmer()
                 )
             }
         }

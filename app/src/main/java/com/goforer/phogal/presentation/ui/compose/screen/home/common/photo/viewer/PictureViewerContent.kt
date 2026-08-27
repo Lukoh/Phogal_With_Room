@@ -14,7 +14,6 @@ import androidx.compose.animation.shrinkOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -45,7 +44,6 @@ import androidx.compose.material.icons.rounded.Visibility
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -66,7 +64,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.RectangleShape
@@ -103,12 +100,13 @@ import com.goforer.phogal.presentation.ui.theme.Blue75
 import com.goforer.phogal.presentation.ui.theme.ColorSnowWhite
 import com.goforer.phogal.presentation.ui.theme.ColorSystemGray1
 import com.goforer.phogal.presentation.ui.theme.ColorSystemGray5
-import com.goforer.base.designsystem.component.shimmer
+import com.goforer.base.designsystem.component.snsShimmer
 import com.goforer.phogal.presentation.ui.compose.screen.home.common.photo.LoadingPicture
 import com.goforer.phogal.presentation.ui.theme.ColorSystemGray7
 import com.goforer.phogal.presentation.ui.theme.DarkGreen60
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 @Immutable
 sealed interface DownloadDialogState {
@@ -437,20 +435,13 @@ fun BodyContent(
             val bringIntoViewRequester = remember { BringIntoViewRequester() }
 
             if (painter.state is AsyncImagePainter.State.Loading) {
-                val isDark = androidx.compose.foundation.isSystemInDarkTheme()
-                val baseColor = if (isDark) Color(0xFF242424) else Color(0xFFEBEBEB)
-                val highlightColor = if (isDark) Color(0xFF323232) else Color(0xFFF5F5F5)
-
                 val screenHeight = LocalWindowInfo.current.containerSize
+
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(screenHeight.height.dp / 2)
-                        .shimmer(
-                            baseColor = baseColor,
-                            highlightColor = highlightColor,
-                            durationMillis = 1200
-                        )
+                        .snsShimmer()
                 )
             } else {
                 UserContainer(
@@ -516,7 +507,7 @@ fun BodyContent(
                     picture.exif?.let { exif ->
                         LaunchedEffect(visibleCameraInfo) {
                             if (visibleCameraInfo) {
-                                delay(1500)
+                                delay(1500.milliseconds)
                                 bringIntoViewRequester.bringIntoView()
                             }
                         }

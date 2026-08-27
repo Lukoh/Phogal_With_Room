@@ -2,6 +2,7 @@ package com.goforer.base.designsystem.component
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -74,18 +75,19 @@ fun Modifier.shimmer(
  * Standard shimmer with predefined premium SNS colors.
  */
 @Composable
-fun Modifier.snsShimmer(): Modifier = shimmer(
-    baseColor = Color(0xFFEBEBEB),
-    highlightColor = Color(0xFFF5F5F5),
-    durationMillis = 1200
-)
+fun Modifier.snsShimmer(): Modifier {
+    return if (isSystemInDarkTheme()) {
+        shimmer(
+            baseColor = Color(0xFF242424),
+            highlightColor = Color(0xFF323232),
+            durationMillis = 1200
+        )
+    } else {
+        shimmer(
+            baseColor = Color(0xFFEBEBEB),
+            highlightColor = Color(0xFFF5F5F5),
+            durationMillis = 1200
+        )
+    }
 
-/**
- * Dark-theme optimized SNS shimmer.
- */
-@Composable
-fun Modifier.snsShimmerDark(): Modifier = shimmer(
-    baseColor = Color(0xFF242424),
-    highlightColor = Color(0xFF323232),
-    durationMillis = 1200
-)
+}
