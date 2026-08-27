@@ -14,6 +14,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
@@ -28,7 +30,9 @@ import com.goforer.base.designsystem.component.CustomCenterAlignedTopAppBar
 import com.goforer.base.designsystem.component.ScaffoldContent
 import com.goforer.base.utils.connect.ConnectionUtils
 import com.goforer.phogal.R
+import com.goforer.phogal.data.model.remote.response.gallery.common.user.User
 import com.goforer.phogal.presentation.stateholder.uistate.home.popularphotos.PopularPhotosContentUiState
+import com.goforer.phogal.presentation.ui.compose.screen.home.common.user.UserInfoBottomSheet
 import com.goforer.phogal.presentation.ui.compose.screen.home.OfflineScreen
 import com.goforer.phogal.presentation.ui.theme.ColorBgSecondary
 import kotlinx.coroutines.launch
@@ -113,24 +117,42 @@ fun PopularPhotosScreen(
                     actions = {}
                 )
             }, content = { paddingValues ->
+                var selectedUserForInfo by rememberSaveable { mutableStateOf<User?>(null) }
+
                 ScaffoldContent(topInterval = paddingValues.calculateTopPadding()) {
                     PopularPhotosContent(
                         modifier = modifier,
                         paddingValues= paddingValues,
                         photos = contentUiState.photos,
+                        onShowUserInfo = { selectedUserForInfo = it },
                         onItemClicked = onItemClicked,
                         onViewPhotos = onViewPhotos,
-                        onShowSnackBar = {
-                            contentUiState.baseUiState.scope.launch {
-                                snackbarHostState.showSnackbar(it)
-                            }
-                        },
-                        onOpenWebView = onOpenWebView,
                         onSuccess = {
                             contentUiState.setVisibleActions(it)
                         },
                         onLoadedPhotos = {
                             contentUiState.setLoadedPhotos(it)
+                        }
+                    )
+                }
+
+                selectedUserForInfo?.let { user ->
+                    val text = stringResource(id = R.string.user_info_has_no_portfolio)
+
+                    UserInfoBottomSheet(
+                        user = user,
+                        showUserInfoBottomSheet = true,
+                        onDismissedRequest = { isPortfolioClicked ->
+                            selectedUserForInfo = null
+                            if (isPortfolioClicked) {
+                                if (user.portfolioUrl.isNullOrEmpty()) {
+                                    contentUiState.baseUiState.scope.launch {
+                                        snackbarHostState.showSnackbar("${user.firstName} ${text}")
+                                    }
+                                } else {
+                                    onOpenWebView(user.firstName, user.portfolioUrl)
+                                }
+                            }
                         }
                     )
                 }

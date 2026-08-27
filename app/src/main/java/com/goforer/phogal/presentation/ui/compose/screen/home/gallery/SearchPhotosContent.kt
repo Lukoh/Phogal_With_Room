@@ -31,6 +31,7 @@ import com.goforer.base.designsystem.animation.GenericCubicAnimationShape
 import com.goforer.base.designsystem.component.Chips
 import com.goforer.phogal.R
 import com.goforer.phogal.data.model.remote.response.gallery.common.photo.Photo
+import com.goforer.phogal.data.model.remote.response.gallery.common.user.User
 import com.goforer.phogal.presentation.stateholder.uistate.home.gallery.SearchPhotosContentUiState
 import com.goforer.phogal.presentation.stateholder.uistate.home.gallery.rememberSearchPhotosSectionUiState
 import com.goforer.phogal.presentation.stateholder.uistate.home.gallery.rememberSearchSectionUiState
@@ -53,10 +54,9 @@ fun SearchPhotosContent(
     paddingValues: PaddingValues,
     onSearch: (String) -> Unit,
     onChipClicked: (String) -> Unit,
+    onShowUserInfo: (User) -> Unit,
     onItemClicked: (id: String) -> Unit,
     onViewPhotos: (name: String, firstName: String, lastName: String, username: String) -> Unit,
-    onShowSnackBar: (text: String) -> Unit,
-    onOpenWebView: (firstName: String, url: String) -> Unit,
     onLoadSuccess: (isSuccessful: Boolean) -> Unit
 ) {
     Column(
@@ -83,12 +83,11 @@ fun SearchPhotosContent(
             paddingValues = paddingValues,
             query = contentUiState.galleryUiState.currentQuery,
             photos = contentUiState.galleryUiState.photos,
+            onShowUserInfo = onShowUserInfo,
             onItemClicked = { photo, _ -> onItemClicked(photo.id) },
             onViewPhotos = onViewPhotos,
-            onShowSnackBar = onShowSnackBar,
             onLoadSuccess = onLoadSuccess,
-            onScroll = contentUiState::setScrollingChanged,
-            onOpenWebView = onOpenWebView
+            onScroll = contentUiState::setScrollingChanged
         )
     }
 
@@ -157,12 +156,11 @@ private fun ColumnScope.PhotosOrInitScreen(
     paddingValues: PaddingValues,
     query: String,
     photos: LazyPagingItems<Photo>,
+    onShowUserInfo: (User) -> Unit,
     onItemClicked: (Photo, Int) -> Unit,
     onViewPhotos: (name: String, firstName: String, lastName: String, username: String) -> Unit,
-    onShowSnackBar: (text: String) -> Unit,
     onLoadSuccess: (Boolean) -> Unit,
-    onScroll: (Boolean) -> Unit,
-    onOpenWebView: (firstName: String, url: String) -> Unit
+    onScroll: (Boolean) -> Unit
 ) {
     if (query.isNotBlank()) {
         SearchPhotosSection(
@@ -172,12 +170,11 @@ private fun ColumnScope.PhotosOrInitScreen(
             paddingValues = paddingValues,
             photos = photos,
             sectionUiState = rememberSearchPhotosSectionUiState(rememberCoroutineScope(), rememberSaveable { mutableStateOf(false) }),
+            onShowUserInfo = onShowUserInfo,
             onItemClicked = onItemClicked,
             onViewPhotos = onViewPhotos,
-            onShowSnackBar = onShowSnackBar,
             onLoadSuccess = onLoadSuccess,
-            onScroll = onScroll,
-            onOpenWebView = onOpenWebView
+            onScroll = onScroll
         )
     } else {
         InitScreen(

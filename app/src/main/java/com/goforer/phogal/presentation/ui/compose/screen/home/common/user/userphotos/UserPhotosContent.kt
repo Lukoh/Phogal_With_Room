@@ -19,8 +19,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
 import com.goforer.base.customtab.openCustomTab
+import com.goforer.phogal.presentation.ui.compose.screen.home.common.InitScreen
 import com.goforer.phogal.R
 import com.goforer.phogal.data.model.remote.response.gallery.common.photo.Photo
+import com.goforer.phogal.data.model.remote.response.gallery.common.user.User
 import com.goforer.phogal.presentation.stateholder.uistate.home.common.user.photos.UserPhotosContentUiState
 import com.goforer.phogal.presentation.stateholder.uistate.home.common.user.photos.rememberUserPhotosContentUiState
 import com.goforer.phogal.presentation.stateholder.uistate.home.common.user.photos.rememberUserPhotosSectionUiState
@@ -35,8 +37,8 @@ fun UserPhotosContent(
     paddingValues: PaddingValues = PaddingValues(4.dp),
     contentUiState: UserPhotosContentUiState,
     photos: LazyPagingItems<Photo>,
+    onShowUserInfo: (User) -> Unit,
     onItemClicked: (String) -> Unit,
-    onShowSnackBar: (String) -> Unit,
     onSuccess: (Boolean) -> Unit
 ) {
     if (contentUiState.name.isNotBlank()) {
@@ -45,12 +47,9 @@ fun UserPhotosContent(
             paddingValues = paddingValues,
             photos = photos,
             sectionUiState = rememberUserPhotosSectionUiState(),
+            onShowUserInfo = onShowUserInfo,
             onItemClicked = { photo, _ -> onItemClicked(photo.id) },
             onViewPhotos = { _, _, _, _ -> },
-            onShowSnackBar = onShowSnackBar,
-            onOpenWebView = { _, url ->
-                openCustomTab(contentUiState.baseUiState.context, url)
-            },
             onSuccess = onSuccess
         )
     } else {

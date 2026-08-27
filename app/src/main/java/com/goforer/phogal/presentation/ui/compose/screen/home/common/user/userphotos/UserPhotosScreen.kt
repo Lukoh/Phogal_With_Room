@@ -23,6 +23,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -37,11 +39,14 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.goforer.base.customtab.openCustomTab
 import com.goforer.base.designsystem.component.CardSnackBar
 import com.goforer.base.designsystem.component.CustomCenterAlignedTopAppBar
 import com.goforer.base.designsystem.component.ScaffoldContent
 import com.goforer.phogal.R
+import com.goforer.phogal.data.model.remote.response.gallery.common.user.User
 import com.goforer.phogal.presentation.stateholder.business.home.common.user.UserPhotosViewModel
+import com.goforer.phogal.presentation.ui.compose.screen.home.common.user.UserInfoBottomSheet
 import com.goforer.phogal.presentation.stateholder.uistate.home.common.user.photos.UserPhotosContentUiState
 import com.goforer.phogal.presentation.stateholder.uistate.home.common.user.photos.rememberUserPhotosContentUiState
 import com.goforer.phogal.presentation.ui.theme.ColorBgSecondary
@@ -80,16 +85,7 @@ fun UserPhotosScreen(
         }
     }
 
-    // Stable lambdas. The capture set is the bare minimum needed for the
-    // operation, which keeps Compose from invalidating these on every parent
-    // recomposition.
-    val onShowSnackBar: (String) -> Unit = remember(snackbarHostState, contentUiState) {
-        { text: String ->
-            contentUiState.baseUiState.scope.launch {
-                snackbarHostState.showSnackbar(text)
-            }
-        }
-    }
+
 
     // Kick off the Paging stream whenever the target user changes.
     LaunchedEffect(contentUiState.name) {
@@ -160,16 +156,39 @@ fun UserPhotosScreen(
                 }
             )
         }, content = { paddingValues ->
+            var selectedUserForInfo by rememberSaveable { mutableStateOf<User?>(null) }
+
             ScaffoldContent(paddingValues.calculateTopPadding()) {
                 UserPhotosContent(
                     modifier = modifier,
                     paddingValues = paddingValues,
                     contentUiState = contentUiState,
                     photos = contentUiState.photos,
+                    onShowUserInfo = { selectedUserForInfo = it },
                     onItemClicked = onItemClicked,
-                    onShowSnackBar = onShowSnackBar,
                     onSuccess = { isSuccessful: Boolean ->
                         contentUiState.setVisibleAction(isSuccessful)
+                    }
+                )
+            }
+
+            selectedUserForInfo?.let { user ->
+                val text = stringResource(id = R.string.user_info_has_no_portfolio)
+
+                UserInfoBottomSheet(
+                    user = user,
+                    showUserInfoBottomSheet = true,
+                    onDismissedRequest = { isPortfolioClicked ->
+                        selectedUserForInfo = null
+                        if (isPortfolioClicked) {
+                            if (user.portfolioUrl.isNullOrEmpty()) {
+                                contentUiState.baseUiState.scope.launch {
+                                    snackbarHostState.showSnackbar("${user.firstName} ${text}")
+                                }
+                                } else {
+                                    openCustomTab(contentUiState.baseUiState.context, user.portfolioUrl)
+                                }
+                        }
                     }
                 )
             }

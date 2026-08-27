@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -49,9 +50,11 @@ import com.goforer.base.designsystem.component.ScaffoldContent
 import com.goforer.base.designsystem.component.dialog.ErrorDialog
 import com.goforer.phogal.R
 import com.goforer.phogal.data.model.remote.response.gallery.photo.photoinfo.Picture
+import com.goforer.phogal.data.model.remote.response.gallery.common.user.User
 import com.goforer.phogal.presentation.stateholder.business.home.common.photo.info.PictureViewModel
 import com.goforer.phogal.presentation.stateholder.uistate.UiState
 import com.goforer.phogal.presentation.stateholder.uistate.home.common.photo.PhotoContentUiState
+import com.goforer.phogal.presentation.ui.compose.screen.home.common.user.UserInfoBottomSheet
 import com.goforer.phogal.presentation.ui.theme.Red60
 import kotlinx.coroutines.launch
 
@@ -97,13 +100,7 @@ fun PictureViewerScreen(
     // Stable lambdas. The capture set is the bare minimum needed for the
     // operation, which keeps Compose from invalidating these on every parent
     // recomposition.
-    val onShowSnackBar: (String) -> Unit = remember(contentUiState, snackbarHostState) {
-        { text: String ->
-            contentUiState.baseUiState.scope.launch {
-                snackbarHostState.showSnackbar(text)
-            }
-        }
-    }
+
 
     // Stable lambdas. The capture set is the bare minimum needed for the
     // operation, which keeps Compose from invalidating these on every parent
@@ -219,17 +216,39 @@ fun PictureViewerScreen(
             )
         },
         content = { paddingValues ->
+            var selectedUserForInfo by rememberSaveable { mutableStateOf<User?>(null) }
+
             ScaffoldContent(0.dp) {
                 PictureViewerContent(
                     modifier = modifier,
                     contentPadding = paddingValues,
                     contentUiState = contentUiState,
+                    onShowUserInfo = { selectedUserForInfo = it },
                     onViewPhotos = onViewPhotos,
-                    onShowSnackBar = onShowSnackBar,
                     onShownPhoto = onShownPhoto,
-                    onOpenWebView = onOpenWebView,
                     onSuccess = { isSuccessful: Boolean ->
                         if (!isSuccessful) contentUiState.setVisibleActions(false)
+                    }
+                )
+            }
+
+            selectedUserForInfo?.let { user ->
+                val text = stringResource(id = R.string.user_info_has_no_portfolio)
+
+                UserInfoBottomSheet(
+                    user = user,
+                    showUserInfoBottomSheet = true,
+                    onDismissedRequest = { isPortfolioClicked ->
+                        selectedUserForInfo = null
+                        if (isPortfolioClicked) {
+                            if (user.portfolioUrl.isNullOrEmpty()) {
+                                contentUiState.baseUiState.scope.launch {
+                                    snackbarHostState.showSnackbar("${user.firstName} ${text}")
+                                }
+                            } else {
+                                onOpenWebView(user.firstName, user.portfolioUrl)
+                            }
+                        }
                     }
                 )
             }

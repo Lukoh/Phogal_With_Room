@@ -45,7 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
@@ -54,7 +54,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil.compose.AsyncImagePainter
 import coil.size.Size
 import com.goforer.base.designsystem.component.IconButton
@@ -83,38 +82,38 @@ import kotlinx.coroutines.launch
 fun UserContainer(
     modifier: Modifier = Modifier,
     state: UserContainerUiState = rememberUserContainerUiState(),
-    followViewModel: FollowViewModel? = if (LocalInspectionMode.current) null else hiltViewModel(),
-    onViewPhotos: (name: String, firstName: String, lastName: String, username: String) -> Unit,
-    onShowSnackBar: (text: String) -> Unit,
-    onOpenWebView: (firstName: String, url: String) -> Unit
+    followViewModel: FollowViewModel?,
+    onShowUserInfo: (User) -> Unit,
+    onViewPhotos: (name: String, firstName: String, lastName: String, username: String) -> Unit
 ) {
-    val user = state.user.toUser()
+    if (state.user.isEmpty()) return
 
-    UserContainer(
+    val user = remember(state.user) { state.user.toUser() }
+
+    UserContainerContent(
         modifier = modifier,
         state = state,
+        user = user,
         isFollowed = followViewModel?.isUserFollowed(user) ?: false,
         onFollowClick = { followViewModel?.setUserFollow(user) },
-        onViewPhotos = onViewPhotos,
-        onShowSnackBar = onShowSnackBar,
-        onOpenWebView = onOpenWebView
+        onShowUserInfo = onShowUserInfo,
+        onViewPhotos = onViewPhotos
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UserContainer(
+fun UserContainerContent(
     modifier: Modifier = Modifier,
     state: UserContainerUiState = rememberUserContainerUiState(),
+    user: User,
     isFollowed: Boolean,
     onFollowClick: (User) -> Unit,
-    onViewPhotos: (name: String, firstName: String, lastName: String, username: String) -> Unit,
-    onShowSnackBar: (text: String) -> Unit,
-    onOpenWebView: (firstName: String, url: String) -> Unit
+    onShowUserInfo: (User) -> Unit,
+    onViewPhotos: (name: String, firstName: String, lastName: String, username: String) -> Unit
 ) {
-    val user = state.user.toUser()
+    val focusManager = LocalFocusManager.current
     val lastName = user.lastName ?: stringResource(id = R.string.picture_no_last_name)
-    var showUserInfoBottomSheet by rememberSaveable { mutableStateOf(false) }
 
     Column(
         modifier = modifier.background(state.colors[2]),
@@ -129,7 +128,9 @@ fun UserContainer(
                 .fillMaxWidth()
                 .heightIn(76.dp, 114.dp)
                 .clickable {
-                    showUserInfoBottomSheet = true
+                    state.baseUiState.keyboardController?.hide()
+                    focusManager.clearFocus()
+                    onShowUserInfo(user)
                 },
         ) {
             ShowProfileImage(
@@ -176,9 +177,8 @@ fun UserContainer(
             }
 
             Spacer(modifier = Modifier.width(10.dp))
-            state.baseUiState.scope
             ShowFollowButton(
-                modifier = modifier,
+                modifier = Modifier,
                 followColor = state.colors[4],
                 isFollowed
             ) {
@@ -188,7 +188,7 @@ fun UserContainer(
 
         if (state.visibleViewButton) {
             Text(
-                "${stringResource(id = R.string.picture_view_photos)}${" "}${user.totalPhotos}${" "}${stringResource(id = R.string.picture_photos, user.name)}",
+                text = "${stringResource(id = R.string.picture_view_photos)} ${user.totalPhotos} ${stringResource(id = R.string.picture_photos, user.name)}",
                 modifier = Modifier
                     .padding(
                         start = if (state.fromItem)
@@ -219,26 +219,7 @@ fun UserContainer(
         }
     }
 
-    if (showUserInfoBottomSheet) {
-        val text = stringResource(id = R.string.user_info_has_no_portfolio)
 
-        UserInfoBottomSheet(
-            userInfoUiState = rememberUserInfoUiState(),
-            user = user,
-            showUserInfoBottomSheet = showUserInfoBottomSheet,
-            onDismissedRequest = {
-                if (it) {
-                    if (user.portfolioUrl.isNullOrEmpty()) {
-                        state.baseUiState.scope.launch {
-                            onShowSnackBar("${user.firstName}${" "}${text}")
-                        }
-                    } else {
-                        onOpenWebView(user.firstName, user.portfolioUrl)
-                    }
-                }
-            }
-        )
-    }
 }
 
 @Composable
@@ -298,21 +279,14 @@ fun ShowPortfolioButton(
     scope: CoroutineScope,
     bottomSheetState: SheetState,
     firstName: String,
-    onDismissedRequest: (Boolean) -> Unit,
-    onOpenBottomSheet: (Boolean) -> Unit
+    onDismissedRequest: (Boolean) -> Unit
 ) {
-    val onClick = remember(bottomSheetState, scope, onOpenBottomSheet, onDismissedRequest) {
-        {
-            scope.launch {
-                bottomSheetState.hide()
-            }.invokeOnCompletion {
-                if (!bottomSheetState.isVisible) {
-                    onOpenBottomSheet(false)
-                }
-            }
-
+    val onClick = {
+        scope.launch {
+            bottomSheetState.hide()
             onDismissedRequest(true)
         }
+        Unit
     }
 
     IconButton(

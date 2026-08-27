@@ -36,7 +36,9 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImagePainter
 import coil.size.Size
 import com.goforer.base.designsystem.component.loadImagePainter
+import com.goforer.base.designsystem.component.snsShimmer
 import com.goforer.phogal.data.model.remote.response.gallery.photo.photoinfo.Picture
+import com.goforer.phogal.presentation.stateholder.business.home.setting.follow.FollowViewModel
 import com.goforer.phogal.presentation.stateholder.uistate.home.common.photo.PictureItemUiState
 import com.goforer.phogal.presentation.stateholder.uistate.home.common.photo.rememberPictureItemUiState
 import com.goforer.phogal.presentation.stateholder.uistate.home.common.user.rememberUserContainerUiState
@@ -59,10 +61,10 @@ import com.goforer.phogal.presentation.ui.theme.PhogalTheme
 fun PictureItem(
     modifier: Modifier = Modifier,
     pictureItemUiState: PictureItemUiState = rememberPictureItemUiState(),
+    followViewModel: FollowViewModel?,
+    onShowUserInfo: (User) -> Unit,
     onItemClicked: (item: Picture, index: Int) -> Unit,
-    onViewPhotos: (name: String, firstName: String, lastName: String, username: String) -> Unit,
-    onShowSnackBar: (text: String) -> Unit,
-    onOpenWebView: (firstName: String, url: String) -> Unit
+    onViewPhotos: (name: String, firstName: String, lastName: String, username: String) -> Unit
 ) {
     val picture = pictureItemUiState.picture
     val topPadding = if (pictureItemUiState.index == 0) 16.dp else 8.dp
@@ -147,9 +149,9 @@ fun PictureItem(
                     visibleViewButton = rememberSaveable { mutableStateOf(pictureItemUiState.visibleViewButton) },
                     fromItem = rememberSaveable { mutableStateOf(true) }
                 ),
-                onViewPhotos = onViewPhotos,
-                onShowSnackBar = onShowSnackBar,
-                onOpenWebView = onOpenWebView
+                followViewModel = followViewModel,
+                onShowUserInfo = onShowUserInfo,
+                onViewPhotos = onViewPhotos
             )
         }
     }
@@ -178,10 +180,10 @@ fun PictureItemPreview() {
             Column {
                 PictureItem(
                     pictureItemUiState = mockUiState,
-                    onItemClicked = { item, index ->  },
-                    onViewPhotos = { name, first, last, username -> },
-                    onShowSnackBar = { text -> },
-                    onOpenWebView = { firstName, url -> }
+                    followViewModel = null,
+                    onShowUserInfo = {},
+                    onItemClicked = { _, _ ->  },
+                    onViewPhotos = { _, _, _, _ -> }
                 )
             }
         }

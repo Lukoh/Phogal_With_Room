@@ -15,6 +15,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
 import com.goforer.phogal.data.model.remote.response.gallery.common.photo.Photo
+import com.goforer.phogal.data.model.remote.response.gallery.common.user.User
 import com.goforer.phogal.presentation.ui.theme.PhogalTheme
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -23,10 +24,9 @@ fun PopularPhotosContent(
     modifier: Modifier = Modifier,
     paddingValues: PaddingValues,
     photos: LazyPagingItems<Photo>,
+    onShowUserInfo: (User) -> Unit,
     onItemClicked: (id: String) -> Unit,
     onViewPhotos: (name: String, firstName: String, lastName: String, username: String) -> Unit,
-    onShowSnackBar: (text: String) -> Unit,
-    onOpenWebView: (firstName: String, url: String) -> Unit,
     onSuccess: (isSuccessful: Boolean) -> Unit,
     onLoadedPhotos: (isLoadedPhotos: Boolean) -> Unit
 ) {
@@ -34,10 +34,9 @@ fun PopularPhotosContent(
         modifier = modifier,
         paddingValues = paddingValues,
         photos = photos,
+        onShowUserInfo = onShowUserInfo,
         onItemClicked = { photo: Photo, index: Int -> onItemClicked(photo.id) },
         onViewPhotos = onViewPhotos,
-        onShowSnackBar = onShowSnackBar,
-        onOpenWebView = onOpenWebView,
         onSuccess = onSuccess,
         onLoadedPhotos = onLoadedPhotos
     )

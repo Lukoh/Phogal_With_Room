@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
@@ -40,6 +41,8 @@ import com.goforer.phogal.presentation.stateholder.uistate.UIConstants.SCROLL_OF
 import com.goforer.phogal.presentation.stateholder.uistate.UIConstants.UP_BUTTON_THRESHOLD
 import com.goforer.phogal.presentation.stateholder.uistate.home.setting.bookmark.BookmarkSectionUiState
 import com.goforer.phogal.presentation.stateholder.uistate.home.setting.bookmark.rememberBookmarkSectionUiState
+import com.goforer.phogal.data.model.remote.response.gallery.common.user.User
+import com.goforer.phogal.presentation.stateholder.business.home.setting.follow.FollowViewModel
 import com.goforer.phogal.presentation.stateholder.uistate.home.common.photo.rememberPictureItemUiState
 import com.goforer.phogal.presentation.ui.compose.screen.home.common.EmptyState
 import com.goforer.phogal.presentation.ui.compose.screen.home.common.ErrorRow
@@ -58,9 +61,10 @@ fun BookmarkedPhotosSection(
     paddingValues: PaddingValues,
     sectionUiState: BookmarkSectionUiState = rememberBookmarkSectionUiState(),
     photos: LazyPagingItems<Picture>,
+    followViewModel: FollowViewModel = hiltViewModel(),
+    onShowUserInfo: (User) -> Unit,
     onItemClicked: (item: Picture, index: Int) -> Unit,
-    onViewPhotos: (name: String, firstName: String, lastName: String, username: String) -> Unit,
-    onOpenWebView: (firstName: String, url: String) -> Unit
+    onViewPhotos: (name: String, firstName: String, lastName: String, username: String) -> Unit
 ) {
     val lazyListState = photos.rememberLazyListState()
     val isRefreshing by remember(photos.loadState.refresh, photos.itemCount) {
@@ -112,9 +116,10 @@ fun BookmarkedPhotosSection(
                 renderLoadState(
                     photos = photos,
                     sectionUiState = sectionUiState,
+                    followViewModel = followViewModel,
+                    onShowUserInfo = onShowUserInfo,
                     onItemClicked = onItemClicked,
-                    onViewPhotos = onViewPhotos,
-                    onOpenWebView = onOpenWebView,
+                    onViewPhotos = onViewPhotos
                 )
             }
 
@@ -123,7 +128,7 @@ fun BookmarkedPhotosSection(
                     .align(Alignment.BottomEnd)
                     .padding(
                         end = 4.dp,
-                        bottom = paddingValues.calculateBottomPadding() + 18.dp
+                        bottom = paddingValues.calculateBottomPadding() - 18.dp
                     ),
                 visible = isScrolledPastThreshold,
                 onClick = { sectionUiState.setUpButtonClicked() }
@@ -171,9 +176,10 @@ fun BookmarkedPhotosSection(
 private fun LazyListScope.renderLoadState(
     photos: LazyPagingItems<Picture>,
     sectionUiState: BookmarkSectionUiState,
+    followViewModel: FollowViewModel,
+    onShowUserInfo: (User) -> Unit,
     onItemClicked: (item: Picture, index: Int) -> Unit,
-    onViewPhotos: (name: String, firstName: String, lastName: String, username: String) -> Unit,
-    onOpenWebView: (firstName: String, url: String) -> Unit
+    onViewPhotos: (name: String, firstName: String, lastName: String, username: String) -> Unit
 ) {
     val loadState = photos.loadState
 
@@ -217,9 +223,10 @@ private fun LazyListScope.renderLoadState(
         } else {
             pictureItems(
                 photos = photos,
+                followViewModel = followViewModel,
+                onShowUserInfo = onShowUserInfo,
                 onItemClicked = onItemClicked,
-                onViewPhotos = onViewPhotos,
-                onOpenWebView = onOpenWebView
+                onViewPhotos = onViewPhotos
             )
         }
     }
@@ -243,9 +250,10 @@ private fun LazyListScope.renderLoadState(
 @OptIn(ExperimentalFoundationApi::class)
 private fun LazyListScope.pictureItems(
     photos: LazyPagingItems<Picture>,
+    followViewModel: FollowViewModel,
+    onShowUserInfo: (User) -> Unit,
     onItemClicked: (item: Picture, index: Int) -> Unit,
-    onViewPhotos: (name: String, firstName: String, lastName: String, username: String) -> Unit,
-    onOpenWebView: (firstName: String, url: String) -> Unit
+    onViewPhotos: (name: String, firstName: String, lastName: String, username: String) -> Unit
 ) {
     items(count = photos.itemCount,
         key = { index ->
@@ -254,17 +262,18 @@ private fun LazyListScope.pictureItems(
         },
         contentType = photos.itemContentType()
     ) { index ->
+        val photo = photos[index] ?: return@items
         PictureItem(
             modifier = Modifier.animateItem(
                 tween(durationMillis = 250)
             ),
             pictureItemUiState = rememberPictureItemUiState(
-                picture = rememberSaveable { mutableStateOf(photos[index]!!) }
+                picture = rememberSaveable { mutableStateOf(photo) }
             ),
+            followViewModel = followViewModel,
+            onShowUserInfo = onShowUserInfo,
             onItemClicked = onItemClicked,
-            onViewPhotos = onViewPhotos,
-            onShowSnackBar = {},
-            onOpenWebView = onOpenWebView
+            onViewPhotos = onViewPhotos
         )
         if (photos.itemCount < PAGE_SIZE_HINT && index == photos.itemCount - 1)
             Spacer(modifier = Modifier.height(26.dp))

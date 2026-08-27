@@ -40,7 +40,9 @@ import androidx.paging.compose.itemContentType
 import com.goforer.base.designsystem.component.state.rememberLazyListState
 import com.goforer.phogal.R
 import com.goforer.phogal.data.model.remote.response.gallery.common.photo.Photo
+import com.goforer.phogal.data.model.remote.response.gallery.common.user.User
 import com.goforer.phogal.presentation.stateholder.business.home.setting.bookmark.BookmarkViewModel
+import com.goforer.phogal.presentation.stateholder.business.home.setting.follow.FollowViewModel
 import com.goforer.phogal.presentation.stateholder.uistate.UIConstants.SCROLL_OFFSET_SIGNAL
 import com.goforer.phogal.presentation.stateholder.uistate.UIConstants.UP_BUTTON_THRESHOLD
 import com.goforer.phogal.presentation.stateholder.uistate.home.common.photo.rememberPhotoItemUiState
@@ -70,12 +72,12 @@ fun SearchPhotosSection(
         rememberSaveable { mutableStateOf(false) }
     ),
     bookmarkViewModel: BookmarkViewModel = hiltViewModel(),
+    followViewModel: FollowViewModel = hiltViewModel(),
+    onShowUserInfo: (User) -> Unit,
     onItemClicked: (item: Photo, index: Int) -> Unit,
     onViewPhotos: (name: String, firstName: String, lastName: String, username: String) -> Unit,
-    onShowSnackBar: (text: String) -> Unit,
     onLoadSuccess: (isSuccessful: Boolean) -> Unit,
-    onScroll: (isScrolling: Boolean) -> Unit,
-    onOpenWebView: (firstName: String, url: String) -> Unit
+    onScroll: (isScrolling: Boolean) -> Unit
 ) {
     val lazyListState = photos.rememberLazyListState()
     val isRefreshing by remember(photos.loadState.refresh, photos.itemCount) {
@@ -154,10 +156,10 @@ fun SearchPhotosSection(
                 photos = photos,
                 sectionUiState = sectionUiState,
                 bookmarkViewModel = bookmarkViewModel,
+                followViewModel = followViewModel,
+                onShowUserInfo = onShowUserInfo,
                 onItemClicked = onItemClicked,
                 onViewPhotos = onViewPhotos,
-                onShowSnackBar = onShowSnackBar,
-                onOpenWebView = onOpenWebView,
                 onLoadSuccess = onLoadSuccess
             )
         }
@@ -191,10 +193,10 @@ private fun LazyListScope.renderLoadState(
     photos: LazyPagingItems<Photo>,
     sectionUiState: SearchPhotosSectionUiState,
     bookmarkViewModel: BookmarkViewModel,
+    followViewModel: FollowViewModel,
+    onShowUserInfo: (User) -> Unit,
     onItemClicked: (item: Photo, index: Int) -> Unit,
     onViewPhotos: (name: String, firstName: String, lastName: String, username: String) -> Unit,
-    onShowSnackBar: (text: String) -> Unit,
-    onOpenWebView: (firstName: String, url: String) -> Unit,
     onLoadSuccess: (Boolean) -> Unit
 ) {
     val loadState = photos.loadState
@@ -246,10 +248,10 @@ private fun LazyListScope.renderLoadState(
             photoItems(
                 photos = photos,
                 bookmarkViewModel = bookmarkViewModel,
+                followViewModel = followViewModel,
+                onShowUserInfo = onShowUserInfo,
                 onItemClicked = onItemClicked,
-                onViewPhotos = onViewPhotos,
-                onShowSnackBar = onShowSnackBar,
-                onOpenWebView = onOpenWebView
+                onViewPhotos = onViewPhotos
             )
         }
     }
@@ -279,10 +281,10 @@ private fun LazyListScope.renderLoadState(
 private fun LazyListScope.photoItems(
     photos: LazyPagingItems<Photo>,
     bookmarkViewModel: BookmarkViewModel,
+    followViewModel: FollowViewModel,
+    onShowUserInfo: (User) -> Unit,
     onItemClicked: (item: Photo, index: Int) -> Unit,
-    onViewPhotos: (name: String, firstName: String, lastName: String, username: String) -> Unit,
-    onShowSnackBar: (text: String) -> Unit,
-    onOpenWebView: (firstName: String, url: String) -> Unit
+    onViewPhotos: (name: String, firstName: String, lastName: String, username: String) -> Unit
 ) {
     items(
         count = photos.itemCount,
@@ -304,10 +306,10 @@ private fun LazyListScope.photoItems(
                     mutableStateOf(bookmarkViewModel.isPhotoBookmarked(photo.id))
                 }
             ),
+            followViewModel = followViewModel,
+            onShowUserInfo = onShowUserInfo,
             onItemClicked = onItemClicked,
-            onViewPhotos = onViewPhotos,
-            onShowSnackBar = onShowSnackBar,
-            onOpenWebView = onOpenWebView
+            onViewPhotos = onViewPhotos
         )
 
         // Spacer only at the end of a short result list.

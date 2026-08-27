@@ -21,6 +21,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -30,7 +32,6 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -39,9 +40,12 @@ import com.goforer.base.designsystem.component.CustomCenterAlignedTopAppBar
 import com.goforer.base.designsystem.component.ScaffoldContent
 import com.goforer.phogal.R
 import com.goforer.phogal.data.model.remote.response.gallery.photo.photoinfo.Picture
+import com.goforer.phogal.data.model.remote.response.gallery.common.user.User
 import com.goforer.phogal.presentation.stateholder.uistate.home.setting.bookmark.BookmarkContentUiState
+import com.goforer.phogal.presentation.ui.compose.screen.home.common.user.UserInfoBottomSheet
 import com.goforer.phogal.presentation.ui.theme.ColorBgSecondary
 import com.goforer.phogal.presentation.ui.theme.PhogalTheme
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
@@ -133,15 +137,38 @@ fun BookmarkedPhotosScreen(
                 }
             )
         }, content = { paddingValues ->
+            var selectedUserForInfo by rememberSaveable { mutableStateOf<User?>(null) }
+
             ScaffoldContent(topInterval = paddingValues.calculateTopPadding()) {
-                BookmarkedPhotosContent(
-                    modifier = modifier,
-                    paddingValues = paddingValues,
-                    bookmarkedPictures = contentUiState.bookmarkedPictures,
-                    enabledLoadPhotos = contentUiState.enabledLoadPhotos,
-                    onItemClicked = onItemClicked,
-                    onViewPhotos = onViewPhotos,
-                    onOpenWebView = onOpenWebView
+                    BookmarkedPhotosContent(
+                        modifier = modifier,
+                        paddingValues = paddingValues,
+                        bookmarkedPictures = contentUiState.bookmarkedPictures,
+                        enabledLoadPhotos = contentUiState.enabledLoadPhotos,
+                        onShowUserInfo = { selectedUserForInfo = it },
+                        onItemClicked = onItemClicked,
+                        onViewPhotos = onViewPhotos
+                    )
+            }
+
+            selectedUserForInfo?.let { user ->
+                val text = stringResource(id = R.string.user_info_has_no_portfolio)
+
+                UserInfoBottomSheet(
+                    user = user,
+                    showUserInfoBottomSheet = true,
+                    onDismissedRequest = { isPortfolioClicked ->
+                        selectedUserForInfo = null
+                        if (isPortfolioClicked) {
+                            if (user.portfolioUrl.isNullOrEmpty()) {
+                                contentUiState.baseUiState.scope.launch {
+                                    snackbarHostState.showSnackbar("${user.firstName} ${text}")
+                                }
+                            } else {
+                                onOpenWebView(user.firstName, user.portfolioUrl)
+                            }
+                        }
+                    }
                 )
             }
         }

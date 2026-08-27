@@ -18,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -39,7 +40,10 @@ import com.goforer.base.designsystem.component.CustomCenterAlignedTopAppBar
 import com.goforer.base.designsystem.component.ScaffoldContent
 import com.goforer.base.utils.connect.ConnectionUtils
 import com.goforer.phogal.R
+import androidx.compose.runtime.saveable.rememberSaveable
+import com.goforer.phogal.data.model.remote.response.gallery.common.user.User
 import com.goforer.phogal.presentation.stateholder.uistate.home.gallery.SearchPhotosContentUiState
+import com.goforer.phogal.presentation.ui.compose.screen.home.common.user.UserInfoBottomSheet
 import com.goforer.phogal.presentation.stateholder.uistate.home.gallery.rememberSearchSectionUiState
 import com.goforer.phogal.presentation.ui.compose.screen.home.OfflineScreen
 import com.goforer.phogal.presentation.ui.theme.ColorBgSecondary
@@ -116,6 +120,8 @@ fun SearchPhotosScreen(
             (contentUiState.baseUiState.context as Activity).finish()
         }
 
+        var selectedUserForInfo by rememberSaveable { mutableStateOf<User?>(null) }
+
         Scaffold(
             contentColor = ColorBgSecondary,
             snackbarHost = snackbarHost,
@@ -134,15 +140,31 @@ fun SearchPhotosScreen(
                         paddingValues = paddingValues,
                         onSearch = onSearch,
                         onChipClicked = onChipClicked,
+                        onShowUserInfo = { selectedUserForInfo = it },
                         onItemClicked = onItemClicked,
                         onViewPhotos = onViewPhotos,
-                        onShowSnackBar = { message ->
-                            contentUiState.baseUiState.scope.launch {
-                                snackbarHostState.showSnackbar(message)
-                            }
-                        },
-                        onOpenWebView = onOpenWebView,
                         onLoadSuccess = contentUiState::setActionsVisibilityChanged
+                    )
+                }
+
+                selectedUserForInfo?.let { user ->
+                    val text = stringResource(id = R.string.user_info_has_no_portfolio)
+
+                    UserInfoBottomSheet(
+                        user = user,
+                        showUserInfoBottomSheet = true,
+                        onDismissedRequest = { isPortfolioClicked ->
+                            selectedUserForInfo = null
+                            if (isPortfolioClicked) {
+                                if (user.portfolioUrl.isNullOrEmpty()) {
+                                    contentUiState.baseUiState.scope.launch {
+                                        snackbarHostState.showSnackbar("${user.firstName} ${text}")
+                                    }
+                                } else {
+                                    onOpenWebView(user.firstName, user.portfolioUrl)
+                                }
+                            }
+                        }
                     )
                 }
             }

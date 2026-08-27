@@ -28,6 +28,7 @@ import com.goforer.phogal.data.model.remote.response.gallery.common.photo.Photo
 import com.goforer.phogal.data.model.remote.response.gallery.common.photo.PhotoLinks
 import com.goforer.phogal.data.model.remote.response.gallery.common.user.User
 import com.goforer.phogal.data.model.remote.response.gallery.common.user.UserLinks
+import com.goforer.phogal.presentation.stateholder.business.home.setting.follow.FollowViewModel
 import com.goforer.phogal.presentation.stateholder.uistate.home.common.photo.PhotoItemUiState
 import com.goforer.phogal.presentation.stateholder.uistate.home.common.photo.rememberPhotoItemUiState
 import com.goforer.phogal.presentation.stateholder.uistate.home.common.user.rememberUserContainerUiState
@@ -42,10 +43,10 @@ import com.goforer.phogal.presentation.ui.theme.DarkGreen60
 fun PhotoItem(
     modifier: Modifier = Modifier,
     state: PhotoItemUiState = rememberPhotoItemUiState(),
+    followViewModel: FollowViewModel?,
+    onShowUserInfo: (User) -> Unit,
     onItemClicked: (item: Photo, index: Int) -> Unit,
-    onViewPhotos: (name: String, firstName: String, lastName: String, username: String) -> Unit,
-    onShowSnackBar: (text: String) -> Unit,
-    onOpenWebView: (firstName: String, url: String) -> Unit
+    onViewPhotos: (name: String, firstName: String, lastName: String, username: String) -> Unit
 ) {
     ElevatedCard(
         modifier = modifier
@@ -123,9 +124,9 @@ fun PhotoItem(
             UserContainer(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                 state = userState,
-                onViewPhotos = onViewPhotos,
-                onShowSnackBar = onShowSnackBar,
-                onOpenWebView = onOpenWebView
+                followViewModel = followViewModel,
+                onShowUserInfo = onShowUserInfo,
+                onViewPhotos = onViewPhotos
             )
         }
     }
@@ -137,10 +138,10 @@ fun PhotoItemPreview() {
     PhotoItem(
         modifier = Modifier.fillMaxWidth(),
         state = createMockPhotoItemUiState(isBookmarked = false),
-        onItemClicked = { photo, index ->  },
-        onViewPhotos = { name, firstName, lastName, username -> },
-        onShowSnackBar = { text -> },
-        onOpenWebView = { firstName, url -> }
+        followViewModel = null,
+        onShowUserInfo = {},
+        onItemClicked = { _, _ ->  },
+        onViewPhotos = { _, _, _, _ -> }
     )
 }
 
@@ -149,10 +150,10 @@ fun PhotoItemPreview() {
 fun PhotoItemBookmarkPreview() {
     PhotoItem(
         state = createMockPhotoItemUiState(isBookmarked = true),
+        followViewModel = null,
+        onShowUserInfo = {},
         onItemClicked = { _, _ -> },
-        onViewPhotos = { _, _, _, _ -> },
-        onShowSnackBar = { _ -> },
-        onOpenWebView = { _, _ -> }
+        onViewPhotos = { _, _, _, _ -> }
     )
 }
 
@@ -234,7 +235,7 @@ fun createMockPhotoItemUiState(isBookmarked: Boolean): PhotoItemUiState {
         photo = mockPhoto,
         visibleViewButton = true,
         clicked = false,
-        bookmarked = false
+        bookmarked = isBookmarked
     )
 }
 

@@ -91,6 +91,7 @@ import com.goforer.phogal.R
 import com.goforer.phogal.data.model.remote.response.gallery.photo.download.TrackDownload
 import com.goforer.phogal.data.model.remote.response.gallery.photo.photoinfo.Exif
 import com.goforer.phogal.data.model.remote.response.gallery.photo.photoinfo.Picture
+import com.goforer.phogal.data.model.remote.response.gallery.common.user.User
 import com.goforer.phogal.presentation.stateholder.uistate.UiState
 import com.goforer.phogal.presentation.stateholder.uistate.home.common.photo.PhotoContentUiState
 import com.goforer.phogal.presentation.stateholder.uistate.home.common.user.rememberUserContainerUiState
@@ -121,11 +122,10 @@ fun PictureViewerContent(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues,
     contentUiState: PhotoContentUiState,
+    onShowUserInfo: (User) -> Unit,
     onViewPhotos: (name: String, firstName: String, lastName: String, username: String) -> Unit,
-    onShowSnackBar: (text: String) -> Unit,
     onShownPhoto: (pictureUiState: Picture) -> Unit,
-    onOpenWebView: (firstName: String, url: String) -> Unit,
-    onSuccess: (isSuccessful: Boolean) -> Unit
+    onSuccess: (isSuccessful: Boolean) -> Unit,
 ) {
     Box(
         modifier = modifier.fillMaxSize()
@@ -135,10 +135,9 @@ fun PictureViewerContent(
             contentPadding = contentPadding,
             pictureState = contentUiState.pictureState,
             visibleViewButton = contentUiState.visibleViewButton,
+            onShowUserInfo = onShowUserInfo,
             onViewPhotos = onViewPhotos,
-            onShowSnackBar = onShowSnackBar,
             onShownPhoto = onShownPhoto,
-            onOpenWebView = onOpenWebView,
             onSuccess = onSuccess,
             onClick = { url ->
                 contentUiState.baseUiState.scope.launch {
@@ -203,10 +202,9 @@ fun PictureBody(
     contentPadding: PaddingValues,
     pictureState: UiState<Picture>,
     visibleViewButton: Boolean,
+    onShowUserInfo: (User) -> Unit,
     onViewPhotos: (name: String, firstName: String, lastName: String, username: String) -> Unit,
-    onShowSnackBar: (text: String) -> Unit,
     onShownPhoto: (pictureUiState: Picture) -> Unit,
-    onOpenWebView: (firstName: String, url: String) -> Unit,
     onSuccess: (isSuccessful: Boolean) -> Unit,
     onClick: (id: String) -> Unit,
     onRetry: () -> Unit
@@ -222,10 +220,9 @@ fun PictureBody(
                 contentPadding = contentPadding,
                 picture = picture,
                 visibleViewButton = visibleViewButton,
+                onShowUserInfo = onShowUserInfo,
                 onViewPhotos = onViewPhotos,
-                onShowSnackBar = onShowSnackBar,
                 onShownPhoto = onShownPhoto,
-                onOpenWebView = onOpenWebView,
                 onClick = onClick,
             )
         }
@@ -329,10 +326,9 @@ fun PictureBodyContent(
     contentPadding: PaddingValues,
     picture: Picture,
     visibleViewButton: Boolean,
+    onShowUserInfo: (User) -> Unit,
     onViewPhotos: (name: String, firstName: String, lastName: String, username: String) -> Unit,
-    onShowSnackBar: (text: String) -> Unit,
     onShownPhoto: (picture: Picture) -> Unit,
-    onOpenWebView: (firstName: String, url: String) -> Unit,
     onClick: (id: String) -> Unit
 ) {
     Box(
@@ -352,10 +348,9 @@ fun PictureBodyContent(
                 modifier = Modifier,
                 picture = picture,
                 visibleViewPhotosButton = visibleViewButton,
+                onShowUserInfo = onShowUserInfo,
                 onViewPhotos = onViewPhotos,
-                onShowSnackBar = onShowSnackBar,
                 onShownPhoto = onShownPhoto,
-                onOpenWebView = onOpenWebView,
                 onClick = onClick
             )
             Spacer(modifier = Modifier.height(30.dp))
@@ -403,10 +398,9 @@ fun BodyContent(
     modifier: Modifier = Modifier,
     picture: Picture,
     visibleViewPhotosButton: Boolean,
+    onShowUserInfo: (User) -> Unit,
     onViewPhotos: (name: String, firstName: String, lastName: String, username: String) -> Unit,
-    onShowSnackBar: (text: String) -> Unit,
     onShownPhoto: (picture: Picture) -> Unit,
-    onOpenWebView: (firstName: String, url: String) -> Unit,
     onClick: (id: String) -> Unit
 ) {
     var visibleCameraInfo by remember { mutableStateOf(false) }
@@ -453,9 +447,9 @@ fun BodyContent(
                         visibleViewButton = rememberSaveable { mutableStateOf(visibleViewPhotosButton) },
                         fromItem = rememberSaveable { mutableStateOf(false) }
                     ),
-                    onViewPhotos = onViewPhotos,
-                    onShowSnackBar = onShowSnackBar,
-                    onOpenWebView = onOpenWebView
+                    followViewModel = null,
+                    onShowUserInfo = onShowUserInfo,
+                    onViewPhotos = onViewPhotos
                 )
 
                 Box(

@@ -68,6 +68,8 @@ fun FollowingUsersItem(
     onOpenWebView: (firstName: String, url: String?) -> Unit,
     onFollow: (userUiState: User) -> Unit
 ) {
+    if (followingUserItemUiState.user.isEmpty()) return
+
     val user = followingUserItemUiState.user.toUser()
     val topPadding = if (followingUserItemUiState.index == 0) 16.dp else 8.dp
     val bottomPadding = 8.dp
