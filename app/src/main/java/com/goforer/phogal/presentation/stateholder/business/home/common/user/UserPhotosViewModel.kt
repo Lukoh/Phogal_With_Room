@@ -79,7 +79,7 @@ class UserPhotosViewModel @Inject constructor(
     }
 
     private companion object {
-        const val PAGE_SIZE = 10
+        const val PAGE_SIZE = 20
         const val STOP_TIMEOUT_MS = 5_000L
     }
 }

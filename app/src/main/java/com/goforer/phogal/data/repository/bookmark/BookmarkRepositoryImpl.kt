@@ -18,7 +18,12 @@ class BookmarkRepositoryImpl @Inject constructor(
 
     override fun bookmarks(bookmarks: List<Picture>, pageSize: Int): Flow<PagingData<Picture>> {
         val bookmarkPagingFlow = Pager(
-            config = PagingConfig(pageSize = pageSize, enablePlaceholders = false),
+            config = PagingConfig(
+                pageSize = pageSize,
+                initialLoadSize = pageSize * 2,
+                prefetchDistance = 10,
+                enablePlaceholders = false
+            ),
             pagingSourceFactory = { BookmarkPagingSource(bookmarks) }
         ).flow
 

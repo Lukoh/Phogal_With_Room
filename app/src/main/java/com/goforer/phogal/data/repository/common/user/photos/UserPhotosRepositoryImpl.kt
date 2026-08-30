@@ -9,6 +9,7 @@ import com.goforer.phogal.data.datasource.local.room.PhogalDatabase
 import com.goforer.phogal.data.datasource.local.room.entity.PhotoFeedEntity
 import com.goforer.phogal.data.datasource.local.room.mediator.PhotoFeedRemoteMediator
 import com.goforer.phogal.data.datasource.network.api.RestAPI
+import com.goforer.phogal.data.datasource.network.mapSuccess
 import com.goforer.phogal.data.datasource.network.safeApiCall
 import com.goforer.phogal.data.model.remote.response.gallery.common.photo.Photo
 import kotlinx.coroutines.flow.Flow
@@ -36,8 +37,8 @@ class UserPhotosRepositoryImpl @Inject constructor(
         return Pager(
             config = PagingConfig(
                 pageSize = pageSize,
-                initialLoadSize = pageSize,
-                prefetchDistance = (pageSize - 5).coerceAtLeast(1),
+                initialLoadSize = pageSize * 2,
+                prefetchDistance = 10,
                 enablePlaceholders = false
             ),
             remoteMediator = PhotoFeedRemoteMediator(
@@ -47,6 +48,9 @@ class UserPhotosRepositoryImpl @Inject constructor(
             ) { page, perPage ->
                 safeApiCall {
                     api.getUserPhotos(username = username, page = page, perPage = perPage)
+                }.mapSuccess { photos ->
+                    val endReached = photos.isEmpty() || photos.size < perPage
+                    photos to endReached
                 }
             },
             pagingSourceFactory = { database.photoFeedDao().pagingSource(feedKey) }

@@ -42,7 +42,7 @@ class PhotoFeedRemoteMediator(
     private val pageSize: Int,
     private val database: PhogalDatabase,
     private val cacheTimeoutMs: Long = TimeUnit.MINUTES.toMillis(30),
-    private val fetchPage: suspend (page: Int, perPage: Int) -> NetworkResult<List<Photo>>
+    private val fetchPage: suspend (page: Int, perPage: Int) -> NetworkResult<Pair<List<Photo>, Boolean>>
 ) : RemoteMediator<Int, PhotoFeedEntity>() {
 
     private val photoFeedDao = database.photoFeedDao()
@@ -78,8 +78,7 @@ class PhotoFeedRemoteMediator(
 
         return when (val result = fetchPage(page, pageSize)) {
             is NetworkResult.Success -> {
-                val photos = result.data
-                val endReached = photos.isEmpty() || photos.size < pageSize
+                val (photos, endReached) = result.data
                 val now = System.currentTimeMillis()
 
                 // Atomic swap: readers never observe a half-written feed.
@@ -113,7 +112,7 @@ class PhotoFeedRemoteMediator(
                         val prefix = feedKey.substringBefore('/') + "/"
                         photoFeedDao.clearFeedsByPrefix(prefix)
                         remoteKeyDao.clearByPrefix(prefix)
-                        
+
                         remoteKeyDao.upsert(
                             RemoteKeyEntity(
                                 feedKey = feedKey,

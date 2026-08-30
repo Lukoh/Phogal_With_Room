@@ -30,14 +30,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import com.goforer.base.designsystem.component.state.rememberLazyListState
-import com.goforer.phogal.R
 import com.goforer.phogal.data.model.remote.response.gallery.common.photo.Photo
 import com.goforer.phogal.data.model.remote.response.gallery.common.user.User
 import com.goforer.phogal.presentation.stateholder.business.home.setting.bookmark.BookmarkViewModel
@@ -254,8 +252,7 @@ private fun LazyListScope.renderLoadState(
             )
         }
     }
-
-    // Append (next-page) state is rendered independently from refresh state.
+    
     when (loadState.append) {
         is LoadState.Loading -> {
             Timber.d("Pagination Loading")
@@ -293,7 +290,7 @@ private fun LazyListScope.photoItems(
         },
         contentType = photos.itemContentType()
     ) { index ->
-        val photo = photos.peek(index) ?: return@items
+        val photo = photos[index] ?: return@items
 
         PhotoItem(
             modifier = Modifier.animateItem(tween(durationMillis = 250)),

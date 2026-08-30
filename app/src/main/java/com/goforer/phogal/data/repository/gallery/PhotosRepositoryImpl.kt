@@ -47,8 +47,8 @@ class PhotosRepositoryImpl @Inject constructor(
         return Pager(
             config = PagingConfig(
                 pageSize = pageSize,
-                initialLoadSize = pageSize,
-                prefetchDistance = (pageSize - 5).coerceAtLeast(1),
+                initialLoadSize = pageSize * 2,
+                prefetchDistance = 10,
                 enablePlaceholders = false
             ),
             remoteMediator = PhotoFeedRemoteMediator(
@@ -58,7 +58,11 @@ class PhotosRepositoryImpl @Inject constructor(
             ) { page, perPage ->
                 safeApiCall {
                     api.getPhotos(keyword = query, page = page, perPage = perPage)
-                }.mapSuccess { it.results }
+                }.mapSuccess { response ->
+                    val photos = response.results
+                    val endReached = photos.isEmpty() || page >= response.totalPages
+                    photos to endReached
+                }
             },
             // SSOT: the UI is fed from Room, never directly from Retrofit.
             pagingSourceFactory = { database.photoFeedDao().pagingSource(feedKey) }

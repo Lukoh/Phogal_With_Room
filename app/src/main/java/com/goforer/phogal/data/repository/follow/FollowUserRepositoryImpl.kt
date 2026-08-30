@@ -18,7 +18,12 @@ class FollowUserRepositoryImpl @Inject constructor(
 
     override fun followedUsers(followedUsers: List<User>, pageSize: Int): Flow<PagingData<User>> {
         val followUsersPagingFlow = Pager(
-            config = PagingConfig(pageSize = pageSize, enablePlaceholders = false),
+            config = PagingConfig(
+                pageSize = pageSize,
+                initialLoadSize = pageSize * 2,
+                prefetchDistance = 10,
+                enablePlaceholders = false
+            ),
             pagingSourceFactory = { FollowUserPagingSource(followedUsers) }
         ).flow
 

@@ -47,7 +47,7 @@ class PopularPhotosViewModel @Inject constructor(
         const val LATEST = "latest"
         const val OLDEST = "oldest"
 
-        private const val PAGE_SIZE = 10
+        private const val PAGE_SIZE = 20
         private const val STOP_TIMEOUT_MS = 5_000L
     }
 }
