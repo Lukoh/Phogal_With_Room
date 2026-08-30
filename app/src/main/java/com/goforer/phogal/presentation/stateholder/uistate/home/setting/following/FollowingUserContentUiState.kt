@@ -36,7 +36,7 @@ fun rememberFollowingUserContentUiState(
 ): FollowingUserContentUiState {
     val users = followViewModel.followedUsers.collectAsLazyPagingItems()
 
-    return remember(baseUiState, followViewModel, enabledLoadPhotos) {
+    return remember(baseUiState, followViewModel, users, enabledLoadPhotos) {
         FollowingUserContentUiState(
             followViewModel = followViewModel,
             baseUiState = baseUiState,

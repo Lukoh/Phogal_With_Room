@@ -35,7 +35,7 @@ fun rememberBookmarkContentUiState(
 ): BookmarkContentUiState {
     val bookmarkedPictures = bookmarkViewModel.bookmarkedPictures.collectAsLazyPagingItems()
 
-    return remember(baseUiState, bookmarkViewModel, enabledLoadPhotos) {
+    return remember(baseUiState, bookmarkViewModel, bookmarkedPictures, enabledLoadPhotos) {
         BookmarkContentUiState(
             baseUiState = baseUiState,
             bookmarkedPictures = bookmarkedPictures,

@@ -22,6 +22,26 @@ class FollowingUserItemUiState internal constructor(
     val visibleViewButton: Boolean get() = _visibleViewButton.value
     val clicked: Boolean get() = _clicked.value
     val followed: Boolean get() = _followed.value
+
+    fun setIndex(index: Int) {
+        _index.value = index
+    }
+
+    fun setUser(user: String) {
+        _user.value = user
+    }
+
+    fun setClicked(clicked: Boolean) {
+        _clicked.value = clicked
+    }
+
+    fun setVisibleViewButton(visibleViewButton: Boolean) {
+        _visibleViewButton.value = visibleViewButton
+    }
+
+    fun setFollowed(followed: Boolean) {
+        _followed.value = followed
+    }
 }
 
 @Composable

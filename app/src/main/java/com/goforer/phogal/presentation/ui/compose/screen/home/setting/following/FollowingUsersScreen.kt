@@ -141,7 +141,7 @@ fun FollowingUsersScreen(
                 }
             )
         }, content = { paddingValues ->
-            ScaffoldContent(topInterval = paddingValues.calculateTopPadding()) {
+            ScaffoldContent(topInterval = 0.dp) {
                 FollowingUsersContent(
                     modifier = modifier,
                     paddingValues = paddingValues,

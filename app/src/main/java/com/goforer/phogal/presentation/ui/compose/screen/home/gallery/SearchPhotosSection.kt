@@ -77,9 +77,9 @@ fun SearchPhotosSection(
     onScroll: (isScrolling: Boolean) -> Unit
 ) {
     val lazyListState = photos.rememberLazyListState()
-    val isRefreshing by remember(photos.loadState.refresh, photos.itemCount) {
+    val isRefreshing by remember(photos.loadState.refresh) {
         derivedStateOf {
-            photos.loadState.refresh is LoadState.Loading && photos.itemCount > 0
+            photos.loadState.refresh is LoadState.Loading
         }
     }
 
@@ -144,7 +144,7 @@ fun SearchPhotosSection(
             state = lazyListState,
             contentPadding = PaddingValues(
                 start = paddingValues.calculateLeftPadding(layoutDirection),
-                top = paddingValues.calculateLeftPadding(layoutDirection),
+                top = 0.dp,
                 end = paddingValues.calculateRightPadding(layoutDirection) ,
                 bottom = paddingValues.calculateBottomPadding() + 46.dp
             )
@@ -292,16 +292,23 @@ private fun LazyListScope.photoItems(
     ) { index ->
         val photo = photos[index] ?: return@items
 
+        val state = rememberPhotoItemUiState(
+            index = rememberSaveable { mutableIntStateOf(index) },
+            photo = rememberSaveable { mutableStateOf(photo) },
+            visibleViewButton = rememberSaveable { mutableStateOf(true) },
+            bookmarked = rememberSaveable {
+                mutableStateOf(bookmarkViewModel.isPhotoBookmarked(photo.id))
+            }
+        )
+
+        state.setIndex(index)
+        state.setPhoto(photo)
+        state.setVisibleViewButton(true)
+        state.setBookmark(bookmarkViewModel.isPhotoBookmarked(photo.id))
+
         PhotoItem(
             modifier = Modifier.animateItem(tween(durationMillis = 250)),
-            state = rememberPhotoItemUiState(
-                index = rememberSaveable { mutableIntStateOf(index) },
-                photo = rememberSaveable { mutableStateOf(photo) },
-                visibleViewButton = rememberSaveable { mutableStateOf(true) },
-                bookmarked = rememberSaveable {
-                    mutableStateOf(bookmarkViewModel.isPhotoBookmarked(photo.id))
-                }
-            ),
+            state = state,
             followViewModel = followViewModel,
             onShowUserInfo = onShowUserInfo,
             onItemClicked = onItemClicked,

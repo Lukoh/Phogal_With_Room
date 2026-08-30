@@ -1,0 +1,8 @@
+- `[ ]` Restore state update logic in all paged sections
+    - `[ ]` `PopularPhotosSection.kt`
+    - `[ ]` `SearchPhotosSection.kt`
+    - `[ ]` `UserPhotosSection.kt`
+    - `[ ]` `BookmarkedPhotosSection.kt`
+    - `[ ]` `FollowingUsersSection.kt`
+- `[ ]` Refine `isRefreshing` logic across sections
+- `[ ]` Verify refresh behavior

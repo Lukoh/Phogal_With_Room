@@ -33,6 +33,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
@@ -157,7 +158,7 @@ fun UserPhotosScreen(
         }, content = { paddingValues ->
             var selectedUserForInfo by rememberSaveable { mutableStateOf<User?>(null) }
 
-            ScaffoldContent(paddingValues.calculateTopPadding()) {
+            ScaffoldContent(0.dp) {
                 UserPhotosContent(
                     modifier = modifier,
                     paddingValues = paddingValues,

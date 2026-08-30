@@ -42,7 +42,7 @@ fun rememberPopularPhotosContentUiState(
 ): PopularPhotosContentUiState {
     val photos = popularPhotosViewModel.photos.collectAsLazyPagingItems()
 
-    return remember(popularPhotosViewModel, baseUiState, visibleActions, loadedPhotos) {
+    return remember(popularPhotosViewModel, baseUiState, photos, visibleActions, loadedPhotos) {
         PopularPhotosContentUiState(
             baseUiState = baseUiState,
             photos = photos,

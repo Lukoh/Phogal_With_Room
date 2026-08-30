@@ -179,6 +179,7 @@ private fun ColumnScope.PhotosOrInitScreen(
     } else {
         InitScreen(
             modifier = Modifier
+                .padding(top = 0.5.dp)
                 .weight(1f)
                 .align(Alignment.CenterHorizontally),
             text = stringResource(id = R.string.search_photos)

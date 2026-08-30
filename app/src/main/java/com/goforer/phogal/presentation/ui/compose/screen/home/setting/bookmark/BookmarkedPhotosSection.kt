@@ -66,9 +66,9 @@ fun BookmarkedPhotosSection(
     onViewPhotos: (name: String, firstName: String, lastName: String, username: String) -> Unit
 ) {
     val lazyListState = photos.rememberLazyListState()
-    val isRefreshing by remember(photos.loadState.refresh, photos.itemCount) {
+    val isRefreshing by remember(photos.loadState.refresh) {
         derivedStateOf {
-            photos.loadState.refresh is LoadState.Loading && photos.itemCount > 0
+            photos.loadState.refresh is LoadState.Loading
         }
     }
 
@@ -107,7 +107,7 @@ fun BookmarkedPhotosSection(
                 state = lazyListState,
                 contentPadding = PaddingValues(
                     start = paddingValues.calculateLeftPadding(layoutDirection),
-                    top = paddingValues.calculateLeftPadding(layoutDirection),
+                    top = paddingValues.calculateTopPadding(),
                     end = paddingValues.calculateRightPadding(layoutDirection) ,
                     bottom = paddingValues.calculateBottomPadding() + 64.dp
                 )
@@ -262,13 +262,17 @@ private fun LazyListScope.pictureItems(
         contentType = photos.itemContentType()
     ) { index ->
         val photo = photos[index] ?: return@items
+        val state = rememberPictureItemUiState(
+            picture = rememberSaveable { mutableStateOf(photo) }
+        )
+
+        state.setPicture(photo)
+
         PictureItem(
             modifier = Modifier.animateItem(
                 tween(durationMillis = 250)
             ),
-            pictureItemUiState = rememberPictureItemUiState(
-                picture = rememberSaveable { mutableStateOf(photo) }
-            ),
+            pictureItemUiState = state,
             followViewModel = followViewModel,
             onShowUserInfo = onShowUserInfo,
             onItemClicked = onItemClicked,

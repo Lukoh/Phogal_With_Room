@@ -32,6 +32,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -139,7 +140,7 @@ fun BookmarkedPhotosScreen(
         }, content = { paddingValues ->
             var selectedUserForInfo by rememberSaveable { mutableStateOf<User?>(null) }
 
-            ScaffoldContent(topInterval = paddingValues.calculateTopPadding()) {
+            ScaffoldContent(topInterval = 0.dp) {
                     BookmarkedPhotosContent(
                         modifier = modifier,
                         paddingValues = paddingValues,

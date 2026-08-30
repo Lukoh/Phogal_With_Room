@@ -26,7 +26,7 @@ class PictureItemUiState internal constructor(
     }
 
     fun setPicture(picture: Picture) {
-        _picture?.value = picture
+        _picture.value = picture
     }
 
     fun setClicked(clicked: Boolean) {

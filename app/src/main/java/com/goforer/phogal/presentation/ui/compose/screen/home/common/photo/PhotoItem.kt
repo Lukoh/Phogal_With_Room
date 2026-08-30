@@ -19,6 +19,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.goforer.base.designsystem.component.snsShimmer
 import com.goforer.phogal.R
 import com.goforer.phogal.data.model.remote.response.gallery.common.CurrentUserCollection
 import com.goforer.phogal.data.model.remote.response.gallery.common.ProfileImage

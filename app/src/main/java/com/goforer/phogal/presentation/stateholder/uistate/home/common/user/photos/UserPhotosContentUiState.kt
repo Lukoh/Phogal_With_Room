@@ -53,7 +53,7 @@ fun rememberUserPhotosContentUiState(
     val photos = userPhotosViewModel.photos.collectAsLazyPagingItems()
 
     return remember(
-        baseUiState, userPhotosViewModel, name, firstName, visibleActions
+        baseUiState, userPhotosViewModel, photos, name, firstName, visibleActions
     ) {
         UserPhotosContentUiState(
             baseUiState = baseUiState,

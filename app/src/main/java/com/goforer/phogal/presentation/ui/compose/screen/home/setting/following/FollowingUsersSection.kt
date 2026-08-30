@@ -62,9 +62,9 @@ fun FollowingUsersSection(
     onFollow: (userUiState: User) -> Unit
 ) {
     val lazyListState = users.rememberLazyListState()
-    val isRefreshing by remember(users.loadState.refresh, users.itemCount) {
+    val isRefreshing by remember(users.loadState.refresh) {
         derivedStateOf {
-            users.loadState.refresh is LoadState.Loading && users.itemCount > 0
+            users.loadState.refresh is LoadState.Loading
         }
     }
 
@@ -100,7 +100,7 @@ fun FollowingUsersSection(
                 state = lazyListState,
                 contentPadding = PaddingValues(
                     start = paddingValues.calculateLeftPadding(layoutDirection),
-                    top = paddingValues.calculateLeftPadding(layoutDirection),
+                    top = paddingValues.calculateTopPadding(),
                     end = paddingValues.calculateRightPadding(layoutDirection) ,
                     bottom = paddingValues.calculateBottomPadding() + 36.dp
                 )
@@ -253,16 +253,24 @@ private fun LazyListScope.userItems(
         },
         contentType = users.itemContentType()
     ) { index ->
+        val user = users[index] ?: return@items
+        val state = rememberFollowingUserItemUiState(
+            index = rememberSaveable { mutableIntStateOf(index) },
+            user = rememberSaveable { mutableStateOf(user.toString()) },
+            visibleViewButton = rememberSaveable { mutableStateOf(true) },
+            followed = rememberSaveable { mutableStateOf(true) }
+        )
+
+        state.setIndex(index)
+        state.setUser(user.toString())
+        state.setVisibleViewButton(true)
+        state.setFollowed(true)
+
         FollowingUsersItem(
             modifier = Modifier.animateItem(
                 tween(durationMillis = 250)
             ),
-            followingUserItemUiState = rememberFollowingUserItemUiState(
-                index = rememberSaveable { mutableIntStateOf(index) },
-                user = rememberSaveable { mutableStateOf(users[index]!!.toString()) },
-                visibleViewButton = rememberSaveable { mutableStateOf(true) },
-                followed = rememberSaveable { mutableStateOf(true) }
-            ),
+            followingUserItemUiState = state,
             onViewPhotos = onViewPhotos,
             onOpenWebView = onOpenWebView,
             onFollow = onFollow

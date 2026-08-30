@@ -30,14 +30,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import com.goforer.base.designsystem.component.state.rememberLazyListState
-import com.goforer.phogal.R
 import com.goforer.phogal.data.model.remote.response.gallery.common.photo.Photo
 import com.goforer.phogal.data.model.remote.response.gallery.common.user.User
 import com.goforer.phogal.presentation.stateholder.business.home.setting.bookmark.BookmarkViewModel
@@ -47,11 +45,11 @@ import com.goforer.phogal.presentation.stateholder.uistate.UIConstants.UP_BUTTON
 import com.goforer.phogal.presentation.stateholder.uistate.home.common.photo.rememberPhotoItemUiState
 import com.goforer.phogal.presentation.stateholder.uistate.home.popularphotos.PopularPhotosSectionUiState
 import com.goforer.phogal.presentation.stateholder.uistate.home.popularphotos.rememberPopularPhotosSectionUiState
+import com.goforer.phogal.presentation.ui.compose.screen.home.common.EmptyState
+import com.goforer.phogal.presentation.ui.compose.screen.home.common.ErrorRow
 import com.goforer.phogal.presentation.ui.compose.screen.home.common.photo.LoadingPicture
 import com.goforer.phogal.presentation.ui.compose.screen.home.common.photo.PhotoItem
 import com.goforer.phogal.presentation.ui.compose.screen.home.common.photo.ShowUpButton
-import com.goforer.phogal.presentation.ui.compose.screen.home.common.EmptyState
-import com.goforer.phogal.presentation.ui.compose.screen.home.common.ErrorRow
 import com.goforer.phogal.presentation.ui.theme.Blue15
 import com.goforer.phogal.presentation.ui.theme.Blue95
 import kotlinx.coroutines.launch
@@ -75,9 +73,9 @@ fun PopularPhotosSection(
     onLoadedPhotos: (isLoadedPhotos: Boolean) -> Unit
 ) {
     val lazyListState = photos.rememberLazyListState()
-    val isRefreshing by remember(photos.loadState.refresh, photos.itemCount) {
+    val isRefreshing by remember(photos.loadState.refresh) {
         derivedStateOf {
-            photos.loadState.refresh is LoadState.Loading && photos.itemCount > 0
+            photos.loadState.refresh is LoadState.Loading
         }
     }
 
@@ -98,8 +96,7 @@ fun PopularPhotosSection(
         isRefreshing = isRefreshing,
         onRefresh = photos::refresh
     ) {
-        val isDark = isSystemInDarkTheme()
-        val skyBlueBackground = if (isDark)
+        val skyBlueBackground = if (isSystemInDarkTheme())
             Blue15
         else
             Blue95
@@ -112,7 +109,7 @@ fun PopularPhotosSection(
             state = lazyListState,
             contentPadding = PaddingValues(
                 start = paddingValues.calculateLeftPadding(layoutDirection),
-                top = paddingValues.calculateLeftPadding(layoutDirection),
+                top = paddingValues.calculateTopPadding(),
                 end = paddingValues.calculateRightPadding(layoutDirection) ,
                 bottom = paddingValues.calculateBottomPadding() + 64.dp
             )
@@ -292,9 +289,9 @@ private fun LazyListScope.photoItems(
             0.5.dp
 
         state.setIndex(index)
-        state.setPhoto(photos[index]!!)
+        state.setPhoto(photo)
         state.setVisibleViewButton(true)
-        state.setBookmark(bookmarkViewModel.isPhotoBookmarked(photos[index]!!.id))
+        state.setBookmark(bookmarkViewModel.isPhotoBookmarked(photo.id))
 
         if (index == photos.itemCount - 1)
             onLoadedPhotos(true)
