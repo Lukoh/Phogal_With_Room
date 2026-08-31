@@ -196,7 +196,6 @@ private fun LazyListScope.renderLoadState(
                     )
                 }
             }
-
             is LoadState.NotLoading -> {
                 if (sectionUiState.loadingDone) {
                     item { EmptyState() }
@@ -211,7 +210,6 @@ private fun LazyListScope.renderLoadState(
                     }
                 }
             }
-
             is LoadState.Error -> {
                 onSuccess(false)
                 val error = (loadState.refresh as LoadState.Error).error
@@ -219,24 +217,28 @@ private fun LazyListScope.renderLoadState(
             }
         }
     } else {
-        if (loadState.refresh is LoadState.NotLoading) {
-            onSuccess(true)
-        }
+        photoItems(
+            photos = photos,
+            bookmarkViewModel = bookmarkViewModel,
+            followViewModel = followViewModel,
+            onShowUserInfo = onShowUserInfo,
+            onItemClicked = onItemClicked,
+            onViewPhotos = onViewPhotos,
+            onLoadedPhotos = onLoadedPhotos
+        )
 
-        if (loadState.refresh is LoadState.Error) {
-            onSuccess(false)
-            val error = (loadState.refresh as LoadState.Error).error
-            item { ErrorRow(throwable = error, onRetry = { photos.retry() }) }
-        } else {
-            photoItems(
-                photos = photos,
-                bookmarkViewModel = bookmarkViewModel,
-                followViewModel = followViewModel,
-                onShowUserInfo = onShowUserInfo,
-                onItemClicked = onItemClicked,
-                onViewPhotos = onViewPhotos,
-                onLoadedPhotos = onLoadedPhotos
-            )
+        when (loadState.refresh) {
+            is LoadState.NotLoading -> {
+                onSuccess(true)
+            }
+            is LoadState.Error -> {
+                onSuccess(false)
+                val error = (loadState.refresh as LoadState.Error).error
+                item { ErrorRow(throwable = error, onRetry = { photos.retry() }) }
+            }
+            is LoadState.Loading -> {
+                onSuccess(true)
+            }
         }
     }
 
